@@ -1,5 +1,7 @@
 package org.example.gui;
 
+import org.example.graph.Graph;
+import org.example.layout.FruchtermanReingold;
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import java.awt.*;
@@ -47,20 +49,45 @@ public class GraphInput {
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        frame.setLocationRelativeTo(null);
+        frame.setLocationRelativeTo(null);//center it
         frame.setVisible(true);
 
 
         //https://www.geeksforgeeks.org/java/message-dialogs-java-gui/
         button.addActionListener(e -> {
-            if (verticesText.getText().isEmpty()  || edgesText.getText().isEmpty()){
+
+            if (verticesText.getText().isEmpty() || edgesText.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(frame,
-                        "Please enter the missing input(s) ",
+                        "Please enter the missing input(s)",
                         "Input Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+            int V = Integer.parseInt(verticesText.getText());
+            int E = Integer.parseInt(edgesText.getText());
+
+            Graph graph = Graph.randomGraph(V, E, 800, 600);
+
+            FruchtermanReingold layout =
+                    new FruchtermanReingold(graph, 800, 600);
+
+
+            GraphPanel graphPanel = new GraphPanel(graph, layout);
+
+            //white was killing my eyes
+            graphPanel.setBackground(Color.GRAY);
+
+            //replace the GUI input with the graph animation
+            frame.getContentPane().removeAll();
+            frame.add(graphPanel);
+
+            frame.revalidate();
+            frame.repaint();
+
+            graphPanel.startAnimation();
         });
+
 
     }
 

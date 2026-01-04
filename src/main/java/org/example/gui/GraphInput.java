@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import java.awt.*;
 
-public class GraphPanel {
+public class GraphInput {
 
     private JFrame frame;
     private JPanel panel;
@@ -14,7 +14,7 @@ public class GraphPanel {
     private JTextField edgesText;
     private JButton button;
 
-    public GraphPanel() {
+    public GraphInput() {
 
         frame = new JFrame("Force Directed Graph Layout");
         panel = new JPanel();

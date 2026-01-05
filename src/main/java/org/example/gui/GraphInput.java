@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import java.awt.*;
 
+
 public class GraphInput {
 
     private JFrame frame;
@@ -18,8 +19,8 @@ public class GraphInput {
         frame = new JFrame("Force Directed Graph Layout");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JPanel panel = new JPanel(new GridLayout(0, 5, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
 
         JLabel verticesLabel = new JLabel("Number of vertices:");
         JLabel edgesLabel = new JLabel("Number of edges:");
@@ -67,6 +68,7 @@ public class GraphInput {
                 new FruchtermanReingold(graph, 3000, 3000);
 
         GraphPanel graphPanel = new GraphPanel(graph, layout);
+        graphPanel.setSize(100,100);
 
         JScrollPane scrollPane = new JScrollPane(graphPanel);
         scrollPane.setHorizontalScrollBarPolicy(
@@ -76,8 +78,10 @@ public class GraphInput {
 
         //remove the input gui, and show the graph transformation
         frame.getContentPane().removeAll();
-        scrollPane.setSize(3000,3000);
         frame.add(scrollPane);
+
+        frame.setSize(1000, 700);
+        frame.setLocationRelativeTo(null); //center it
 
         frame.revalidate();
         frame.repaint();

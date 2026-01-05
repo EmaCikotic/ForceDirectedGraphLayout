@@ -31,12 +31,28 @@ public class GraphPanel extends JPanel {
     }
 
     public void startAnimation() {
-        timer = new Timer(20, e -> {
-            layout.step();
-            repaint();
+
+        //initial delay so the ugly graph is seen at the start
+        int delayMs = 3500;
+
+        Timer delayTimer = new Timer(delayMs, e -> {
+
+            // graph animation
+            timer = new Timer(40, ev -> {
+                layout.step();
+                repaint();
+            });
+
+            timer.start();
+
+            // stop the delay timer
+            ((Timer) e.getSource()).stop();
         });
-        timer.start();
+
+        delayTimer.setRepeats(false); // run once
+        delayTimer.start();
     }
+
 
     @Override
     protected void paintComponent(Graphics g) {

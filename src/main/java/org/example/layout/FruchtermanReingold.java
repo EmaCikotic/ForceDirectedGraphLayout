@@ -63,14 +63,29 @@ public class FruchtermanReingold {
         }
 
         //step 4: adjust displacement
-        for (Vertex v : graph.vertices){
-            double displLength=v.displacement.length();
 
-            if (displLength > 0){
-                Vector2D move = v.displacement.normalize().multiply(Math.min(displLength,temperature));
+        for (Vertex v : graph.vertices) {
+            double displLength = v.displacement.length();
+
+            if (displLength > 0) {
+                Vector2D move =
+                        v.displacement.normalize()
+                                .multiply(Math.min(displLength, temperature));
+
                 v.position = v.position.add(move);
+
+                v.position.x = Math.min(
+                        Math.max(v.position.x, 0),
+                        3000
+                );
+
+                v.position.y = Math.min(
+                        Math.max(v.position.y, 0),
+                        3000
+                );
             }
         }
+
 
         temperature*=0.95;
     }

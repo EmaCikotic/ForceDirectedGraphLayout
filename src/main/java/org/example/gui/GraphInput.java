@@ -2,6 +2,7 @@ package org.example.gui;
 
 import org.example.graph.Graph;
 import org.example.layout.FruchtermanReingold;
+
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import java.awt.*;
@@ -9,87 +10,78 @@ import java.awt.*;
 public class GraphInput {
 
     private JFrame frame;
-    private JPanel panel;
-    private JLabel verticesLabel;
-    private JLabel edgesLabel;
     private JTextField verticesText;
     private JTextField edgesText;
-    private JButton button;
 
     public GraphInput() {
 
         frame = new JFrame("Force Directed Graph Layout");
-        panel = new JPanel();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        verticesLabel = new JLabel("Number of vertices:");
-        edgesLabel = new JLabel("Number of edges:");
+        JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        JLabel verticesLabel = new JLabel("Number of vertices:");
+        JLabel edgesLabel = new JLabel("Number of edges:");
 
         verticesText = new JTextField(10);
         edgesText = new JTextField(10);
 
-
         ((AbstractDocument) verticesText.getDocument())
                 .setDocumentFilter(new IntegerFilter());
-
         ((AbstractDocument) edgesText.getDocument())
                 .setDocumentFilter(new IntegerFilter());
 
-        button = new JButton("Generate Graph");
-
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        panel.setLayout(new GridLayout(0, 1, 5, 5));
+        JButton button = new JButton("Generate Graph");
 
         panel.add(verticesLabel);
         panel.add(verticesText);
         panel.add(edgesLabel);
         panel.add(edgesText);
         panel.add(button);
-        frame.add(panel);
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
         frame.pack();
-        frame.setLocationRelativeTo(null);//center it
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-
-        //https://www.geeksforgeeks.org/java/message-dialogs-java-gui/
-        button.addActionListener(e -> {
-
-            if (verticesText.getText().isEmpty() || edgesText.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(frame,
-                        "Please enter the missing input(s)",
-                        "Input Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            int V = Integer.parseInt(verticesText.getText());
-            int E = Integer.parseInt(edgesText.getText());
-
-            Graph graph = Graph.randomGraph(V, E, 800, 600);
-
-            FruchtermanReingold layout =
-                    new FruchtermanReingold(graph, 800, 600);
-
-
-            GraphPanel graphPanel = new GraphPanel(graph, layout);
-
-            //white was killing my eyes
-            graphPanel.setBackground(Color.GRAY);
-
-            //replace the GUI input with the graph animation
-            frame.getContentPane().removeAll();
-            frame.add(graphPanel);
-
-            frame.revalidate();
-            frame.repaint();
-
-            graphPanel.startAnimation();
-        });
-
-
+        button.addActionListener(e -> generateGraph());
     }
 
+    private void generateGraph() {
+        if (verticesText.getText().isEmpty() || edgesText.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Please enter both values",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
 
+        int V = Integer.parseInt(verticesText.getText());
+        int E = Integer.parseInt(edgesText.getText());
+
+        Graph graph = Graph.randomGraph(V, E, 3000, 3039);
+        FruchtermanReingold layout =
+                new FruchtermanReingold(graph, 3000, 3000);
+
+        GraphPanel graphPanel = new GraphPanel(graph, layout);
+
+        JScrollPane scrollPane = new JScrollPane(graphPanel);
+        scrollPane.setHorizontalScrollBarPolicy(
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPane.setVerticalScrollBarPolicy(
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        //remove the input gui, and show the graph transformation
+        frame.getContentPane().removeAll();
+        scrollPane.setSize(3000,3000);
+        frame.add(scrollPane);
+
+        frame.revalidate();
+        frame.repaint();
+
+        graphPanel.startAnimation();
+    }
 }

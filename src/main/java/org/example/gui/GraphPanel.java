@@ -14,9 +14,9 @@ public class GraphPanel extends JPanel {
     private final FruchtermanReingold layout;
     private Timer timer;
 
-    // big canvas so scrollbars appear
+    /* big canvas so scrollbars appear
     private static final int CANVAS_WIDTH = 10_000;
-    private static final int CANVAS_HEIGHT = 10_000;
+    private static final int CANVAS_HEIGHT = 10_000;*/
 
     public GraphPanel(Graph graph, FruchtermanReingold layout) {
         this.graph = graph;
@@ -25,20 +25,20 @@ public class GraphPanel extends JPanel {
     }
 
 
-    @Override
-    public Dimension getPreferredSize() {
+    //@Override
+    /*public Dimension getPreferredSize() {
         return new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT);
-    }
+    }*/
 
     public void startAnimation() {
 
         //initial delay so the ugly graph is seen at the start
-        int delayMs = 3500;
+        int delayMs = 2500;
 
         Timer delayTimer = new Timer(delayMs, e -> {
 
             // graph animation
-            timer = new Timer(40, ev -> {
+            timer = new Timer(20, ev -> {
                 layout.step();
                 repaint();
             });
@@ -57,44 +57,66 @@ public class GraphPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         Graphics2D g2 = (Graphics2D) g;
+
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON
         );
 
-
-        double minX = Double.MAX_VALUE;
-        double minY = Double.MAX_VALUE;
+        //  Compute bounding box of the graph, so it fits the screen
+        double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
 
         for (Vertex v : graph.vertices) {
             minX = Math.min(minX, v.position.x);
+            maxX = Math.max(maxX, v.position.x);
             minY = Math.min(minY, v.position.y);
+            maxY = Math.max(maxY, v.position.y);
         }
 
-        //so the border doesn't touch the screen
-        int padding = 20;
-        g2.translate(-minX + padding, -minY + padding);
+        double graphWidth = maxX - minX;
+        double graphHeight = maxY - minY;
 
-        // draw edges
+        if (graphWidth == 0 || graphHeight == 0) return;
+
+        //  Scale to fit the panel
+        int padding = 40;
+        double scaleX = (getWidth() - padding) / graphWidth;
+        double scaleY = (getHeight() - padding) / graphHeight;
+        double scale = Math.min(scaleX, scaleY);
+
+        //  Center graph
+        double offsetX = (getWidth() - graphWidth * scale) / 2;
+        double offsetY = (getHeight() - graphHeight * scale) / 2;
+
+        g2.translate(offsetX, offsetY);
+        g2.scale(scale, scale);
+        g2.translate(-minX, -minY);
+
+        // 4) Draw edges
         g2.setColor(Color.LIGHT_GRAY);
         for (Edge e : graph.edges) {
-            int x1 = (int) e.v.position.x;
-            int y1 = (int) e.v.position.y;
-            int x2 = (int) e.u.position.x;
-            int y2 = (int) e.u.position.y;
-            g2.drawLine(x1, y1, x2, y2);
+            g2.drawLine(
+                    (int) e.v.position.x,
+                    (int) e.v.position.y,
+                    (int) e.u.position.x,
+                    (int) e.u.position.y
+            );
         }
 
-        // draw vertices
+        // 5) Draw vertices
         g2.setColor(Color.BLUE);
         int r = 4;
         for (Vertex v : graph.vertices) {
-            int x = (int) v.position.x;
-            int y = (int) v.position.y;
-            g2.fillOval(x - r, y - r, 2 * r, 2 * r);
+            g2.fillOval(
+                    (int) v.position.x - r,
+                    (int) v.position.y - r,
+                    2 * r,
+                    2 * r
+            );
         }
     }
+
 
 }

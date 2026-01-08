@@ -70,19 +70,16 @@ public class GraphInput {
         GraphPanel graphPanel = new GraphPanel(graph, layout);
         graphPanel.setSize(100,100);
 
-        JScrollPane scrollPane = new JScrollPane(graphPanel);
+        /*JScrollPane scrollPane = new JScrollPane(graphPanel);
         scrollPane.setHorizontalScrollBarPolicy(
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setVerticalScrollBarPolicy(
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);*/
 
         //remove the input gui, and show the graph transformation
         frame.getContentPane().removeAll();
-        frame.add(scrollPane);
-
-        frame.setSize(1000, 700);
-        frame.setLocationRelativeTo(null); //center it
-
+        frame.add(graphPanel, BorderLayout.CENTER);
+        frame.setSize(900, 700);
         frame.revalidate();
         frame.repaint();
 

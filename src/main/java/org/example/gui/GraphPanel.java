@@ -86,7 +86,7 @@ public class GraphPanel extends JPanel {
         double scaleY = (getHeight() - padding) / graphHeight;
         double scale = Math.min(scaleX, scaleY);
 
-        //  Center graph
+        //Center graph
         double offsetX = (getWidth() - graphWidth * scale) / 2;
         double offsetY = (getHeight() - graphHeight * scale) / 2;
 
@@ -94,7 +94,7 @@ public class GraphPanel extends JPanel {
         g2.scale(scale, scale);
         g2.translate(-minX, -minY);
 
-        // 4) Draw edges
+        //Draw edges
         g2.setColor(Color.LIGHT_GRAY);
         for (Edge e : graph.edges) {
             g2.drawLine(
@@ -105,15 +105,15 @@ public class GraphPanel extends JPanel {
             );
         }
 
-        // 5) Draw vertices
+        //Draw vertices
         g2.setColor(Color.BLUE);
         int r = 4;
         for (Vertex v : graph.vertices) {
             g2.fillOval(
                     (int) v.position.x - r,
                     (int) v.position.y - r,
-                    2 * r,
-                    2 * r
+                    6 * r,
+                    6 * r
             );
         }
     }

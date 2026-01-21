@@ -12,59 +12,57 @@ public class GraphPanel extends JPanel {
 
     private final Graph graph;
     private final FruchtermanReingold layout;
+
+    private double durationMs;
+
+
+
     private Timer timer;
+    private int iterations = 0;
+    private static final int MAX_ITER = 500;
 
-    /* big canvas so scrollbars appear
-    private static final int CANVAS_WIDTH = 10_000;
-    private static final int CANVAS_HEIGHT = 10_000;*/
-
-    public GraphPanel(Graph graph, FruchtermanReingold layout) {
+    public GraphPanel(Graph graph, FruchtermanReingold layout, double durationMs ) {
         this.graph = graph;
         this.layout = layout;
+        this.durationMs = durationMs;
+
         setBackground(Color.WHITE);
     }
 
-
-    //@Override
-    /*public Dimension getPreferredSize() {
-        return new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT);
-    }*/
-
     public void startAnimation() {
+        timer = new Timer(20, ev -> {
 
-        //initial delay so the ugly graph is seen at the start
-        int delayMs = 2500;
+            if (iterations >= MAX_ITER) {
+                timer.stop();
+                return;
+            }
 
-        Timer delayTimer = new Timer(delayMs, e -> {
-
-            // graph animation
-            timer = new Timer(20, ev -> {
-                layout.step();
-                repaint();
-            });
-
-            timer.start();
-
-            // stop the delay timer
-            ((Timer) e.getSource()).stop();
+            layout.step();
+            iterations++;
+            repaint();
         });
 
-        delayTimer.setRepeats(false); // run once
-        delayTimer.start();
+        timer.start();
     }
-
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
+        //display time also one the gui panel
+        g2.setColor(Color.BLACK);
+        g2.drawString(
+                String.format("Execution time (500 iterations): %.2f ms",
+                        durationMs),
+                15, 20
+        );
+
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON
         );
 
-        //  Compute bounding box of the graph, so it fits the screen
         double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
         double minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
 
@@ -77,16 +75,14 @@ public class GraphPanel extends JPanel {
 
         double graphWidth = maxX - minX;
         double graphHeight = maxY - minY;
-
         if (graphWidth == 0 || graphHeight == 0) return;
 
-        //  Scale to fit the panel
         int padding = 40;
-        double scaleX = (getWidth() - padding) / graphWidth;
-        double scaleY = (getHeight() - padding) / graphHeight;
-        double scale = Math.min(scaleX, scaleY);
+        double scale = Math.min(
+                (getWidth() - padding) / graphWidth,
+                (getHeight() - padding) / graphHeight
+        );
 
-        //Center graph
         double offsetX = (getWidth() - graphWidth * scale) / 2;
         double offsetY = (getHeight() - graphHeight * scale) / 2;
 
@@ -94,7 +90,6 @@ public class GraphPanel extends JPanel {
         g2.scale(scale, scale);
         g2.translate(-minX, -minY);
 
-        //Draw edges
         g2.setColor(Color.LIGHT_GRAY);
         for (Edge e : graph.edges) {
             g2.drawLine(
@@ -105,7 +100,6 @@ public class GraphPanel extends JPanel {
             );
         }
 
-        //Draw vertices
         g2.setColor(Color.BLUE);
         int r = 4;
         for (Vertex v : graph.vertices) {
@@ -117,6 +111,4 @@ public class GraphPanel extends JPanel {
             );
         }
     }
-
-
 }

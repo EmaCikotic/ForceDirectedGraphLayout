@@ -14,6 +14,10 @@ public class GraphInput {
     private JTextField verticesText;
     private JTextField edgesText;
 
+    private int iterations = 0;
+    private static final int MAX_ITER = 500;
+
+
     public GraphInput() {
 
         frame = new JFrame("Force Directed Graph Layout");
@@ -63,12 +67,38 @@ public class GraphInput {
         int V = Integer.parseInt(verticesText.getText());
         int E = Integer.parseInt(edgesText.getText());
 
-        Graph graph = Graph.randomGraph(V, E, 3000, 3039);
-        FruchtermanReingold layout =
-                new FruchtermanReingold(graph, 3000, 3000);
 
-        GraphPanel graphPanel = new GraphPanel(graph, layout);
+        //graph for animation
+        Graph graphAnim = Graph.randomGraph(V, E, 3000, 3000);
+        FruchtermanReingold layoutAnim =
+                new FruchtermanReingold(graphAnim, 3000, 3000);
+
+        //graph for time measurement
+        Graph graphTime = Graph.randomGraph(V, E, 3000, 3000);
+        FruchtermanReingold layoutTime =
+                new FruchtermanReingold(graphTime, 3000, 3000);
+
+
+        //measure time (no gui)
+        long start = System.nanoTime();
+
+        for (int i = 0; i < MAX_ITER; i++) {
+            layoutTime.step();
+        }
+
+        long end = System.nanoTime();
+
+        double durationMs = (end - start) / 1_000_000.0;
+
+        System.out.println(
+                "Execution time (" + MAX_ITER + " iterations): "
+                        + durationMs + " ms"
+        );
+
+        //animation
+        GraphPanel graphPanel = new GraphPanel(graphAnim, layoutAnim, durationMs);
         graphPanel.setSize(100,100);
+        graphPanel.setBackground(Color.GRAY);
 
         /*JScrollPane scrollPane = new JScrollPane(graphPanel);
         scrollPane.setHorizontalScrollBarPolicy(

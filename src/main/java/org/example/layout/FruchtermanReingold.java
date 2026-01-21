@@ -10,7 +10,7 @@ public class FruchtermanReingold {
 
     private Graph graph;
     private double k;
-    private double temperature;
+    private  double temperature;
 
 
     private double repulsiveForce(double distance) {

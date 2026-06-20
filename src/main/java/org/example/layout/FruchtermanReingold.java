@@ -12,7 +12,10 @@ public class FruchtermanReingold {
     private double k;
     private  double temperature;
 
-    private double c;
+    private double height;
+
+    private double width;
+
 
 
     private double repulsiveForce(double distance) {
@@ -24,10 +27,11 @@ public class FruchtermanReingold {
 
     public FruchtermanReingold( Graph graph, double width, double height, double c ){
         this.graph=graph;
-        this.c=c;
         double area= width*height;
         this.k= c*Math.sqrt(area/graph.vertices.size());
-        this.temperature=Math.max(width,height)/10;
+        this.temperature=Math.max(width,height)/50;
+        this.height=height;
+        this.width=width;
     }
 
     public void step(){
@@ -79,12 +83,12 @@ public class FruchtermanReingold {
 
                 v.position.x = Math.min(
                         Math.max(v.position.x, 0),
-                        3000
+                        width
                 );
 
                 v.position.y = Math.min(
                         Math.max(v.position.y, 0),
-                        3000
+                        height
                 );
             }
         }

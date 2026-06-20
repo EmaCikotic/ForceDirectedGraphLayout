@@ -13,9 +13,9 @@ public class GraphPanel extends JPanel {
     private final Graph graph;
     private final FruchtermanReingold layout;
 
-    private double durationMs;
+    private final double durationMs;
 
-    private double averageIterationsMS;
+    private final double averageIterationsMS;
 
 
 
@@ -83,7 +83,7 @@ public class GraphPanel extends JPanel {
         double graphHeight = maxY - minY;
         if (graphWidth == 0 || graphHeight == 0) return;
 
-        int padding = 40;
+        int padding = 50;
         double scale = Math.min(
                 (getWidth() - padding) / graphWidth,
                 (getHeight() - padding) / graphHeight
@@ -105,6 +105,7 @@ public class GraphPanel extends JPanel {
                     (int) e.u.position.y
             );
         }
+
 
         g2.setColor(Color.BLUE);
         int r = 4;

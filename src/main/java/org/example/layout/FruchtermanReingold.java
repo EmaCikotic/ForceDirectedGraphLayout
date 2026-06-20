@@ -12,6 +12,8 @@ public class FruchtermanReingold {
     private double k;
     private  double temperature;
 
+    private double c;
+
 
     private double repulsiveForce(double distance) {
         return (k * k) / distance;
@@ -20,10 +22,11 @@ public class FruchtermanReingold {
         return (distance * distance) / k;
     }
 
-    public FruchtermanReingold( Graph graph, double width, double height ){
+    public FruchtermanReingold( Graph graph, double width, double height, double c ){
         this.graph=graph;
+        this.c=c;
         double area= width*height;
-        this.k= Math.sqrt(area/graph.vertices.size());
+        this.k= c*Math.sqrt(area/graph.vertices.size());
         this.temperature=Math.max(width,height)/10;
     }
 

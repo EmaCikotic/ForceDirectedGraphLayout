@@ -8,9 +8,9 @@ public class Graph {
     public ArrayList<Vertex> vertices = new ArrayList<>();
     public ArrayList<Edge> edges = new ArrayList<>();
 
-    public static Graph randomGraph(int V, int E, int width, int height) {
+    public static Graph randomGraph(int V, int E, int width, int height, long seed) {
         Graph graph = new Graph();
-        Random random = new Random(42); // fixed seed
+        Random random = new Random(seed);
 
         // create vertices
         for (int i = 0; i < V; i++) {

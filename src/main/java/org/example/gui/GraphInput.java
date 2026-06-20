@@ -14,8 +14,13 @@ public class GraphInput {
     private JTextField verticesText;
     private JTextField edgesText;
 
-    private int iterations = 0;
     private static final int MAX_ITER = 500;
+
+    private static final int WIDTH = 3000;
+    private static final int HEIGHT = 3000;
+
+    private static final double C = 1.0;
+    private static final long SEED = 42;
 
 
     public GraphInput() {
@@ -69,14 +74,14 @@ public class GraphInput {
 
 
         //graph for animation
-        Graph graphAnim = Graph.randomGraph(V, E, 3000, 3000);
+        Graph graphAnim = Graph.randomGraph(V, E, WIDTH, HEIGHT, SEED);
         FruchtermanReingold layoutAnim =
-                new FruchtermanReingold(graphAnim, 3000, 3000);
+                new FruchtermanReingold(graphAnim, WIDTH, HEIGHT, C);
 
         //graph for time measurement
-        Graph graphTime = Graph.randomGraph(V, E, 3000, 3000);
+        Graph graphTime = Graph.randomGraph(V, E, WIDTH, HEIGHT, SEED);
         FruchtermanReingold layoutTime =
-                new FruchtermanReingold(graphTime, 3000, 3000);
+                new FruchtermanReingold(graphTime, WIDTH, HEIGHT, C);
 
 
         //measure time (no gui)
@@ -89,14 +94,19 @@ public class GraphInput {
         long end = System.nanoTime();
 
         double durationMs = (end - start) / 1_000_000.0;
+        double averageIterationsMS = durationMs/MAX_ITER;
 
         System.out.println(
                 "Execution time (" + MAX_ITER + " iterations): "
-                        + durationMs + " ms"
+                        + durationMs + " ms."
+        );
+        System.out.println(
+                "Average iteration time: "
+                        + averageIterationsMS + " ms"
         );
 
         //animation
-        GraphPanel graphPanel = new GraphPanel(graphAnim, layoutAnim, durationMs);
+        GraphPanel graphPanel = new GraphPanel(graphAnim, layoutAnim, durationMs, averageIterationsMS);
         graphPanel.setSize(100,100);
         graphPanel.setBackground(Color.GRAY);
 

@@ -15,16 +15,19 @@ public class GraphPanel extends JPanel {
 
     private double durationMs;
 
+    private double averageIterationsMS;
+
 
 
     private Timer timer;
     private int iterations = 0;
     private static final int MAX_ITER = 500;
 
-    public GraphPanel(Graph graph, FruchtermanReingold layout, double durationMs ) {
+    public GraphPanel(Graph graph, FruchtermanReingold layout, double durationMs, double averageIterationsMS ) {
         this.graph = graph;
         this.layout = layout;
         this.durationMs = durationMs;
+        this.averageIterationsMS=averageIterationsMS;
 
         setBackground(Color.WHITE);
     }
@@ -57,6 +60,9 @@ public class GraphPanel extends JPanel {
                         durationMs),
                 15, 20
         );
+        g2.drawString( String.format("Average iteration time: %.2f ms",
+                        averageIterationsMS),
+                400, 20);
 
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,

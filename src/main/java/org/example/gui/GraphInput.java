@@ -22,6 +22,11 @@ public class GraphInput {
 
     private JTextField seedText;
 
+    private JTextField runMode;
+
+    final JComboBox<String> modeDropdown;
+
+
 
     private static final int MAX_ITER = 500;
 
@@ -40,6 +45,7 @@ public class GraphInput {
         JLabel verticesLabel = new JLabel("Number of vertices:");
         JLabel edgesLabel = new JLabel("Number of edges:");
         JLabel seedLabel = new JLabel("Seed:");
+        JLabel modeLabel=new JLabel("Execution mode:");
 
         heightText = new JTextField( "3000", 10);
         widthText = new JTextField("3000", 10);
@@ -47,6 +53,10 @@ public class GraphInput {
         seedText = new JTextField("42", 10);
         verticesText = new JTextField("1000", 10);
         edgesText = new JTextField("1000", 10);
+
+        //dropdown for the mode choice
+        String [] choices = {"Sequential", "Parallel", "Distributed"};
+        modeDropdown= new JComboBox<String>(choices);
 
 
 
@@ -83,8 +93,8 @@ public class GraphInput {
         panel.add(edgesLabel);
         panel.add(edgesText);
 
-
-
+        panel.add(modeLabel);
+        panel.add(modeDropdown);
 
         panel.add(button);
 
@@ -115,7 +125,7 @@ public class GraphInput {
         long seed = Long.parseLong(seedText.getText());
         int V = Integer.parseInt(verticesText.getText());
         int E = Integer.parseInt(edgesText.getText());
-
+        String mode=String.valueOf(modeDropdown.getSelectedItem());
 
 
         //graph for animation

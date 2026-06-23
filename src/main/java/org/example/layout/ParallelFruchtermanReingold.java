@@ -52,14 +52,14 @@ public class ParallelFruchtermanReingold {
         int n = graph.vertices.size();
         int chunkSize = n / numThreads;
 
-        List<Future<?>> futures = new ArrayList<>();
+        List<Future> futures = new ArrayList<>();
 
         for (int i = 0; i < numThreads; i++) {
 
             int start = i * chunkSize;
             int end = (i == numThreads - 1) ? n : start + chunkSize;
 
-            Future<?> future = pool.submit(() -> {
+            Future future = pool.submit(() -> {
 
                 for (int j = start; j < end; j++) {
                     graph.vertices.get(j).displacement =

@@ -29,7 +29,7 @@ public class FruchtermanReingold {
         this.graph=graph;
         double area= width*height;
         this.k= c*Math.sqrt(area/graph.vertices.size());
-        this.temperature=Math.max(width,height)/50;
+        this.temperature=Math.max(width,height)/50;  // 10 was too aggresive
         this.height=height;
         this.width=width;
     }

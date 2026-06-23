@@ -2,6 +2,7 @@ package org.example.gui;
 
 import org.example.graph.Graph;
 import org.example.layout.FruchtermanReingold;
+import org.example.layout.Mode;
 
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
@@ -24,9 +25,7 @@ public class GraphInput {
 
     private JTextField runMode;
 
-    final JComboBox<String> modeDropdown;
-
-
+    final JComboBox<Mode> modeDropdown;
 
     private static final int MAX_ITER = 500;
 
@@ -55,8 +54,7 @@ public class GraphInput {
         edgesText = new JTextField("1000", 10);
 
         //dropdown for the mode choice
-        String [] choices = {"Sequential", "Parallel", "Distributed"};
-        modeDropdown= new JComboBox<String>(choices);
+        modeDropdown = new JComboBox<>(Mode.values());
 
 
 
@@ -125,7 +123,14 @@ public class GraphInput {
         long seed = Long.parseLong(seedText.getText());
         int V = Integer.parseInt(verticesText.getText());
         int E = Integer.parseInt(edgesText.getText());
-        String mode=String.valueOf(modeDropdown.getSelectedItem());
+        Mode mode= (Mode) modeDropdown.getSelectedItem();
+
+        //this for now before we actually call different execution modes
+        switch (mode){
+            case SEQUENTIAL -> System.out.println("Sequential execution");
+            case PARALLEL-> System.out.println("Parallel execution");
+            case DISTRIBUTED -> System.out.println("Distributed execution");
+        }
 
 
         //graph for animation

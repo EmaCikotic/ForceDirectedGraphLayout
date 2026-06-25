@@ -19,7 +19,7 @@ public class GraphPanel extends JPanel {
     private final Mode mode;
 
     private Timer timer;
-    private int iterations = 0;
+    private int iterations=0;
     private static final int MAX_ITER = 100;
 
     public GraphPanel(Graph graph, LayoutAlgorithm layout, double durationMs, double averageIterationsMS, Mode mode) {
@@ -28,7 +28,6 @@ public class GraphPanel extends JPanel {
         this.durationMs = durationMs;
         this.averageIterationsMS=averageIterationsMS;
         this.mode = mode;
-
         setBackground(Color.WHITE);
     }
 

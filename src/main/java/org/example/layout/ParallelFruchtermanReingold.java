@@ -11,11 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 public class ParallelFruchtermanReingold implements LayoutAlgorithm{
-
-
     private Graph graph;
     private double k;
-    private  double temperature;
+    double temperature;
 
     private double height;
 
@@ -30,11 +28,20 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
     private final int vertexCount;
     private final int chunkSize;
 
-    private double repulsiveForce(double distance) {
-        return (k * k) / distance;
-    }
     private double attractiveForce(double distance) {
         return (distance * distance) / k;
+    }
+
+
+    //to avoid duplication
+    private void waitForTasks(){
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public ParallelFruchtermanReingold(Graph graph, double width, double height, double c) {
@@ -51,17 +58,17 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
         for (int i = 0; i < THREADS; i++) {
             int start = i * chunkSize;
             int end = Math.min(start + chunkSize, vertexCount);
-
-            System.out.println(
-                    "Chunk " + i + " -> vertices " + start + " to " + (end - 1)
-            );
+            System.out.println("Chunk " + i + " -> vertices " + start + " to " + (end - 1));
         }
     }
 
-    public void step(){
+    @Override public void step(){
 
         //step 1: reset displacement
-        for (Vertex v : graph.vertices) v.displacement= new Vector2D (0 ,0);
+        for (Vertex v : graph.vertices) {
+            v.displacement.x = 0;
+            v.displacement.y = 0;
+        }
 
         // STEP 2: repulsive forces
         futures.clear();
@@ -76,13 +83,7 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
         }
 
         //wait for all workers
-        for (Future<?> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
+        waitForTasks();
 
         //step 3: attractive forces
         for (Edge e: graph.edges){
@@ -99,18 +100,17 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
         }
 
         //step 4: adjust displacement
+        futures.clear();
 
-        for (Vertex v : graph.vertices) {
-            double displLength = v.displacement.length();
+        for (int i = 0; i < THREADS; i++) {
 
-            if (displLength > 0) {
-                Vector2D move = v.displacement.normalize().multiply(Math.min(displLength, temperature));
-                v.position = v.position.add(move);
-                v.position.x = Math.min(Math.max(v.position.x, 0), width);
-                v.position.y = Math.min(Math.max(v.position.y, 0), height);
-            }
+            int start = i * chunkSize;
+            int end = Math.min(start + chunkSize, vertexCount);
+
+            Future<?> future = pool.submit(new VerticesTask(graph, start, end, temperature, width, height));
+            futures.add(future);
         }
-
+        waitForTasks();
 
         temperature*=0.95;
     }

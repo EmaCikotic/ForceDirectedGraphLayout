@@ -33,8 +33,8 @@ public class RepulsiveForceTask implements Callable<Void>{
                     double distance = delta.length();
 
                     if (distance > 0) {
-                        double forceMagnitude = (k * k) / distance;
-                        Vector2D force = delta.normalize().multiply(forceMagnitude);
+                        double repulsiveForce = (k * k) / distance;
+                        Vector2D force = delta.normalize().multiply(repulsiveForce);
                         v.displacement = v.displacement.add(force);
                     }
                 }

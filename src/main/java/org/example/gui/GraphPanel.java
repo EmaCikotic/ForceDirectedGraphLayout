@@ -55,22 +55,12 @@ public class GraphPanel extends JPanel {
 
         //display time also one the gui panel
         g2.setColor(Color.BLACK);
+        g2.drawString("Mode: "+ mode, 15, 20); //display mode on the panel as well
+        g2.drawString(String.format("Execution time (500 iterations): %.2f ms", durationMs), 200, 20);
+        g2.drawString( String.format("Average iteration time: %.2f ms", averageIterationsMS), 600, 20);
 
-       g2.drawString("Mode "+ mode, 15, 20); //display mode on the panel as well
-
-        g2.drawString(
-                String.format("Execution time (500 iterations): %.2f ms",
-                        durationMs),
-                200, 20
-        );
-        g2.drawString( String.format("Average iteration time: %.2f ms",
-                        averageIterationsMS),
-                600, 20);
-
-        g2.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON
-        );
+        //smoother drawing
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
         double minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;

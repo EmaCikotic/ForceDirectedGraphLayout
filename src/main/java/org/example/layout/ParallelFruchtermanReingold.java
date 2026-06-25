@@ -23,12 +23,13 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
 
     private static final int CORES = Runtime.getRuntime().availableProcessors();
     private static final int THREADS=CORES-1;
-
     private  final ExecutorService pool = Executors.newFixedThreadPool(THREADS);
+    private final List<Future<?>> futures= new ArrayList<>();
 
     //compute once
     private final int vertexCount;
     private final int chunkSize;
+
     private double repulsiveForce(double distance) {
         return (k * k) / distance;
     }
@@ -62,36 +63,15 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
         //step 1: reset displacement
         for (Vertex v : graph.vertices) v.displacement= new Vector2D (0 ,0);
 
-
         // STEP 2: repulsive forces
-        List<Future<?>> futures = new ArrayList<>();
+        futures.clear();
 
         for (int i = 0; i < THREADS; i++) {
 
             int start = i * chunkSize;
             int end = Math.min(start + chunkSize, vertexCount);
 
-            Future<?> future = pool.submit(() -> {
-
-                for (int j = start; j < end; j++) {
-
-                    Vertex v = graph.vertices.get(j);
-                    for (Vertex u : graph.vertices) {
-
-                        if (v != u) {
-                            Vector2D delta = v.position.subtract(u.position);
-
-                            double distance = delta.length();
-
-                            if (distance > 0) {
-                                Vector2D force = delta.normalize().multiply(repulsiveForce(distance));
-                                v.displacement = v.displacement.add(force);
-                            }
-                        }
-                    }
-                }
-            });
-
+            Future<?> future = pool.submit(new RepulsiveForceTask(graph, start, end, k));
             futures.add(future);
         }
 
@@ -125,14 +105,9 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
 
             if (displLength > 0) {
                 Vector2D move = v.displacement.normalize().multiply(Math.min(displLength, temperature));
-
                 v.position = v.position.add(move);
-
-                v.position.x = Math.min(Math.max(v.position.x, 0), width
-                );
-
-                v.position.y = Math.min(Math.max(v.position.y, 0), height
-                );
+                v.position.x = Math.min(Math.max(v.position.x, 0), width);
+                v.position.y = Math.min(Math.max(v.position.y, 0), height);
             }
         }
 

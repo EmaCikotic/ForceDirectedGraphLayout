@@ -5,7 +5,7 @@ import org.example.graph.Graph;
 import org.example.graph.Vertex;
 import org.example.math.Vector2D;
 
-public class FruchtermanReingold {
+public class FruchtermanReingold implements LayoutAlgorithm{
 
 
     private Graph graph;

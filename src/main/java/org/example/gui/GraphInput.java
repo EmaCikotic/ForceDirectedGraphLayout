@@ -3,7 +3,8 @@ package org.example.gui;
 import org.example.graph.Graph;
 import org.example.layout.FruchtermanReingold;
 import org.example.layout.Mode;
-
+import org.example.layout.ParallelFruchtermanReingold;
+import org.example.layout.LayoutAlgorithm;
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import java.awt.*;
@@ -125,18 +126,31 @@ public class GraphInput {
         int E = Integer.parseInt(edgesText.getText());
         Mode mode= (Mode) modeDropdown.getSelectedItem();
 
-        //this for now before we actually call different execution modes
-        switch (mode){
-            case SEQUENTIAL -> System.out.println("Sequential execution");
-            case PARALLEL-> System.out.println("Parallel execution");
-            case DISTRIBUTED -> System.out.println("Distributed execution");
-        }
 
-
-        //graph for animation
         Graph graphAnim = Graph.randomGraph(V, E, width, height, seed);
-        FruchtermanReingold layoutAnim =
-                new FruchtermanReingold(graphAnim, width, height, c);
+        LayoutAlgorithm layoutAnim;
+
+        switch (mode) {
+
+            case SEQUENTIAL:
+                layoutAnim = new FruchtermanReingold(graphAnim, width, height, c);
+                System.out.println("Sequential version");
+                break;
+
+            case PARALLEL:
+                layoutAnim = new ParallelFruchtermanReingold(graphAnim, width, height, c);
+                System.out.println("Parallel version");
+                break;
+
+            case DISTRIBUTED:
+                // later
+                throw new UnsupportedOperationException(
+                        "Distributed not implemented yet"
+                );
+
+            default:
+                throw new IllegalStateException("Unexpected mode: " + mode);
+        }
 
         //graph for time measurement
         Graph graphTime = Graph.randomGraph(V, E, width, height, seed);
@@ -166,7 +180,7 @@ public class GraphInput {
         );
 
         //animation
-        GraphPanel graphPanel = new GraphPanel(graphAnim, layoutAnim, durationMs, averageIterationsMS);
+        GraphPanel graphPanel = new GraphPanel(graphAnim, layoutAnim, durationMs, averageIterationsMS, mode);
         graphPanel.setSize(100,100);
         graphPanel.setBackground(Color.GRAY);
 

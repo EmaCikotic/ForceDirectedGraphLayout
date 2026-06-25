@@ -5,13 +5,12 @@ import org.example.graph.Graph;
 import org.example.graph.Vertex;
 import org.example.math.Vector2D;
 
-
-import java.awt.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-
-public class ParallelFruchtermanReingold {
+public class ParallelFruchtermanReingold implements LayoutAlgorithm{
 
 
     private Graph graph;
@@ -22,12 +21,14 @@ public class ParallelFruchtermanReingold {
 
     private double width;
 
-    private final int numThreads = Runtime.getRuntime().availableProcessors();
+    private static final int CORES = Runtime.getRuntime().availableProcessors();
+    private static final int THREADS=CORES-1;
 
-    private final ExecutorService pool = Executors.newFixedThreadPool(numThreads);
+    private  final ExecutorService pool = Executors.newFixedThreadPool(THREADS);
 
-
-
+    //compute once
+    private final int vertexCount;
+    private final int chunkSize;
     private double repulsiveForce(double distance) {
         return (k * k) / distance;
     }
@@ -35,63 +36,71 @@ public class ParallelFruchtermanReingold {
         return (distance * distance) / k;
     }
 
-    public ParallelFruchtermanReingold( Graph graph, double width, double height, double c ){
-        this.graph=graph;
-        double area= width*height;
-        this.k= c*Math.sqrt(area/graph.vertices.size());
-        this.temperature=Math.max(width,height)/50;  // 10 was too aggressive
-        this.height=height;
-        this.width=width;
+    public ParallelFruchtermanReingold(Graph graph, double width, double height, double c) {
+        this.graph = graph;
+        double area = width * height;
+        this.k = c * Math.sqrt(area / graph.vertices.size());
+        this.temperature = Math.max(width, height) / 50;
+        this.height = height;
+        this.width = width;
+
+        this.vertexCount = graph.vertices.size();
+        this.chunkSize = (int) Math.ceil((double) this.vertexCount / THREADS);
+
+        for (int i = 0; i < THREADS; i++) {
+            int start = i * chunkSize;
+            int end = Math.min(start + chunkSize, vertexCount);
+
+            System.out.println(
+                    "Chunk " + i + " -> vertices " + start + " to " + (end - 1)
+            );
+        }
     }
 
     public void step(){
 
         //step 1: reset displacement
+        for (Vertex v : graph.vertices) v.displacement= new Vector2D (0 ,0);
 
-        //chunk size
-        int n = graph.vertices.size();
-        int chunkSize = n / numThreads;
 
-        List<Future> futures = new ArrayList<>();
+        // STEP 2: repulsive forces
+        List<Future<?>> futures = new ArrayList<>();
 
-        for (int i = 0; i < numThreads; i++) {
+        for (int i = 0; i < THREADS; i++) {
 
             int start = i * chunkSize;
-            int end = (i == numThreads - 1) ? n : start + chunkSize;
+            int end = Math.min(start + chunkSize, vertexCount);
 
-            Future future = pool.submit(() -> {
+            Future<?> future = pool.submit(() -> {
 
                 for (int j = start; j < end; j++) {
-                    graph.vertices.get(j).displacement =
-                            new Vector2D(0, 0);
-                }
 
+                    Vertex v = graph.vertices.get(j);
+                    for (Vertex u : graph.vertices) {
+
+                        if (v != u) {
+                            Vector2D delta = v.position.subtract(u.position);
+
+                            double distance = delta.length();
+
+                            if (distance > 0) {
+                                Vector2D force = delta.normalize().multiply(repulsiveForce(distance));
+                                v.displacement = v.displacement.add(force);
+                            }
+                        }
+                    }
+                }
             });
 
             futures.add(future);
         }
 
-// wait for all tasks to finish
+        //wait for all workers
         for (Future<?> future : futures) {
             try {
                 future.get();
-            } catch (Exception e) {
+            } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-            }
-        }
-        //step 2: repulsive forces
-        for (Vertex v : graph.vertices){
-            for (Vertex u: graph.vertices){
-                if (v!= u){
-                    Vector2D delta= v.position.subtract(u.position);
-                    double distance=delta.length(); //how far apart are the vertices
-
-                    //potential overflow safeguard
-                    if (distance>0){
-                        Vector2D force= delta.normalize().multiply(repulsiveForce(distance));
-                        v.displacement=v.displacement.add(force);
-                    }
-                }
             }
         }
 
@@ -115,20 +124,14 @@ public class ParallelFruchtermanReingold {
             double displLength = v.displacement.length();
 
             if (displLength > 0) {
-                Vector2D move =
-                        v.displacement.normalize()
-                                .multiply(Math.min(displLength, temperature));
+                Vector2D move = v.displacement.normalize().multiply(Math.min(displLength, temperature));
 
                 v.position = v.position.add(move);
 
-                v.position.x = Math.min(
-                        Math.max(v.position.x, 0),
-                        width
+                v.position.x = Math.min(Math.max(v.position.x, 0), width
                 );
 
-                v.position.y = Math.min(
-                        Math.max(v.position.y, 0),
-                        height
+                v.position.y = Math.min(Math.max(v.position.y, 0), height
                 );
             }
         }

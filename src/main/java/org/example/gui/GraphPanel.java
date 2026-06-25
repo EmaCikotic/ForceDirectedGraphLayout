@@ -3,31 +3,31 @@ package org.example.gui;
 import org.example.graph.Edge;
 import org.example.graph.Graph;
 import org.example.graph.Vertex;
-import org.example.layout.FruchtermanReingold;
-
+import org.example.layout.LayoutAlgorithm;
+import org.example.layout.Mode;
 import javax.swing.*;
 import java.awt.*;
+
+
 
 public class GraphPanel extends JPanel {
 
     private final Graph graph;
-    private final FruchtermanReingold layout;
-
+    private final LayoutAlgorithm layout;
     private final double durationMs;
-
     private final double averageIterationsMS;
-
-
+    private final Mode mode;
 
     private Timer timer;
     private int iterations = 0;
-    private static final int MAX_ITER = 500;
+    private static final int MAX_ITER = 100;
 
-    public GraphPanel(Graph graph, FruchtermanReingold layout, double durationMs, double averageIterationsMS ) {
+    public GraphPanel(Graph graph, LayoutAlgorithm layout, double durationMs, double averageIterationsMS, Mode mode) {
         this.graph = graph;
         this.layout = layout;
         this.durationMs = durationMs;
         this.averageIterationsMS=averageIterationsMS;
+        this.mode = mode;
 
         setBackground(Color.WHITE);
     }
@@ -55,14 +55,17 @@ public class GraphPanel extends JPanel {
 
         //display time also one the gui panel
         g2.setColor(Color.BLACK);
+
+       g2.drawString("Mode "+ mode, 15, 20); //display mode on the panel as well
+
         g2.drawString(
                 String.format("Execution time (500 iterations): %.2f ms",
                         durationMs),
-                15, 20
+                200, 20
         );
         g2.drawString( String.format("Average iteration time: %.2f ms",
                         averageIterationsMS),
-                400, 20);
+                600, 20);
 
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,

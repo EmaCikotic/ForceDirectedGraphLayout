@@ -32,19 +32,24 @@ public class GraphPanel extends JPanel {
     }
 
     public void startAnimation() {
-        timer = new Timer(20, ev -> {
 
-            if (iterations >= MAX_ITER) {
-                timer.stop();
-                return;
-            }
+        repaint();
 
-            layout.step();
-            iterations++;
-            repaint();
+        Timer delay = new Timer(1500, e -> {
+            timer = new Timer(30, ev -> {
+                if (iterations >= MAX_ITER) {
+                    timer.stop();
+                    return;
+                }
+                layout.step();
+                iterations++;
+                repaint();
+            });
+            timer.start();
         });
 
-        timer.start();
+        delay.setRepeats(false);
+        delay.start();
     }
 
     @Override

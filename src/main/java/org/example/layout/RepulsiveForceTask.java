@@ -10,7 +10,7 @@ public class RepulsiveForceTask implements Callable<Void>{
     private final Graph graph;
     private final int start;
     private final int end;
-    private double k;
+    private final double k;
 
     public RepulsiveForceTask( Graph graph, int start, int end, double k) {
         this.graph=graph;

@@ -17,7 +17,7 @@ public class Graph {
             double x = random.nextDouble() * width;
             double y = random.nextDouble() * height;
 
-            Vertex v = new Vertex(new Vector2D(x, y));
+            Vertex v = new Vertex(i, new Vector2D(x, y));
             graph.vertices.add(v);
         }
 

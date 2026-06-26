@@ -23,14 +23,12 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
     private static final int THREADS=CORES-1;
     private  final ExecutorService pool = Executors.newFixedThreadPool(THREADS);
     private final List<Future<?>> futures= new ArrayList<>();
+    private final List<Future<Vector2D[]>> attractiveFutures= new ArrayList<>(); //for step 3
+
 
     //compute once
     private final int vertexCount;
     private final int chunkSize;
-
-    private double attractiveForce(double distance) {
-        return (distance * distance) / k;
-    }
 
 
     //to avoid duplication
@@ -81,21 +79,32 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
             Future<?> future = pool.submit(new RepulsiveForceTask(graph, start, end, k));
             futures.add(future);
         }
-
         //wait for all workers
         waitForTasks();
 
-        //step 3: attractive forces
-        for (Edge e: graph.edges){
-            Vertex v = e.v;
-            Vertex u = e.u;
-            Vector2D delta=v.position.subtract(u.position);
-            double distance= delta.length();
+        //step 3: attractive forces, work done on edges
+        attractiveFutures.clear();
 
-            if (distance>0){
-                Vector2D force=delta.normalize().multiply(attractiveForce(distance));
-                v.displacement = v.displacement.subtract(force);
-                u.displacement = u.displacement.add(force);
+        int edgeCount = graph.edges.size();
+        int edgeChunkSize = (int) Math.ceil((double) edgeCount / THREADS);
+        for (int i = 0; i < THREADS; i++) {
+
+            int start = i * edgeChunkSize;
+            int end = Math.min(start + edgeChunkSize, edgeCount);
+
+            Future<Vector2D[]> future = pool.submit(new AttractiveForceTask(graph, start, end, k));
+            attractiveFutures.add(future);
+        }
+        // collect and merge results
+        for (Future<Vector2D[]> future : attractiveFutures) {
+
+            try {
+                Vector2D[] localDisplacement = future.get();
+                for (int i = 0; i < vertexCount; i++) {
+                    graph.vertices.get(i).displacement = graph.vertices.get(i).displacement.add(localDisplacement[i]);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
         }
 
@@ -106,7 +115,6 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm{
 
             int start = i * chunkSize;
             int end = Math.min(start + chunkSize, vertexCount);
-
             Future<?> future = pool.submit(new VerticesTask(graph, start, end, temperature, width, height));
             futures.add(future);
         }

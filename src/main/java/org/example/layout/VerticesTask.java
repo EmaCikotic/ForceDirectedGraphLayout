@@ -22,12 +22,12 @@ public class VerticesTask implements Callable<Void> {
         this.start=start;
         this.end= end;
         this.temperature=temperature;
-        this.width=height;
+        this.width=width;
         this.height=height;
     }
 
     @Override
-    public Void call() throws Exception {
+    public Void call(){
 
         for (int i = start; i < end; i++) {
 

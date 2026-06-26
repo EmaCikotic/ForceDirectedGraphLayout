@@ -170,8 +170,7 @@ public class GraphInput {
         double durationMs = (end - start) / 1_000_000.0;
         double averageIterationsMS = durationMs/MAX_ITER;
 
-        System.out.println(
-                "Execution time (" + MAX_ITER + " iterations): "
+        System.out.println("Execution time (" + MAX_ITER + " iterations): "
                         + durationMs + " ms."
         );
         System.out.println(

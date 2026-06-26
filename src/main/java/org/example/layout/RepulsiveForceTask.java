@@ -28,7 +28,6 @@ public class RepulsiveForceTask implements Callable<Void>{
             for (Vertex u : graph.vertices) {
 
                 if (v != u) {
-
                     Vector2D delta = v.position.subtract(u.position);
                     double distance = delta.length();
 

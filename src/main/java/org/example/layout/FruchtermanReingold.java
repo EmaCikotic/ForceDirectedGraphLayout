@@ -11,12 +11,8 @@ public class FruchtermanReingold implements LayoutAlgorithm{
     private Graph graph;
     private double k;
     private  double temperature;
-
     private double height;
-
     private double width;
-
-
 
     private double repulsiveForce(double distance) {
         return (k * k) / distance;
@@ -29,7 +25,7 @@ public class FruchtermanReingold implements LayoutAlgorithm{
         this.graph=graph;
         double area= width*height;
         this.k= c*Math.sqrt(area/graph.vertices.size());
-        this.temperature=Math.max(width,height)/50;  // 10 was too aggresive
+        this.temperature=Math.max(width,height)/50;  // 10 was too aggressive
         this.height=height;
         this.width=width;
     }
@@ -75,21 +71,10 @@ public class FruchtermanReingold implements LayoutAlgorithm{
             double displLength = v.displacement.length();
 
             if (displLength > 0) {
-                Vector2D move =
-                        v.displacement.normalize()
-                                .multiply(Math.min(displLength, temperature));
-
+                Vector2D move = v.displacement.normalize().multiply(Math.min(displLength, temperature));
                 v.position = v.position.add(move);
-
-                v.position.x = Math.min(
-                        Math.max(v.position.x, 0),
-                        width
-                );
-
-                v.position.y = Math.min(
-                        Math.max(v.position.y, 0),
-                        height
-                );
+                v.position.x = Math.min(Math.max(v.position.x, 0), width);
+                v.position.y = Math.min(Math.max(v.position.y, 0), height);
             }
         }
 

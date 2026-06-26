@@ -13,21 +13,13 @@ import java.awt.*;
 public class GraphInput {
 
     private JFrame frame;
-
     private JTextField heightText;
-
     private JTextField widthText;
-
     private JTextField cText;
     private JTextField verticesText;
     private JTextField edgesText;
-
     private JTextField seedText;
-
-    private JTextField runMode;
-
     final JComboBox<Mode> modeDropdown;
-
     private static final int MAX_ITER = 500;
 
 
@@ -57,8 +49,6 @@ public class GraphInput {
         //dropdown for the mode choice
         modeDropdown = new JComboBox<>(Mode.values());
 
-
-
         //letters not allowed
         ((AbstractDocument) heightText.getDocument())
                 .setDocumentFilter(new IntegerFilter());
@@ -84,7 +74,6 @@ public class GraphInput {
 
         panel.add(seedLabel);
         panel.add(seedText);
-
 
         panel.add(verticesLabel);
         panel.add(verticesText);
@@ -147,36 +136,24 @@ public class GraphInput {
                 throw new UnsupportedOperationException(
                         "Distributed not implemented yet"
                 );
-
             default:
                 throw new IllegalStateException("Unexpected mode: " + mode);
         }
 
         //graph for time measurement
         Graph graphTime = Graph.randomGraph(V, E, width, height, seed);
-        FruchtermanReingold layoutTime =
-                new FruchtermanReingold(graphTime, width, height, c);
+        FruchtermanReingold layoutTime = new FruchtermanReingold(graphTime, width, height, c);
 
 
         //measure time (no gui)
         long start = System.nanoTime();
-
-        for (int i = 0; i < MAX_ITER; i++) {
-            layoutTime.step();
-        }
-
+        for (int i = 0; i < MAX_ITER; i++) layoutTime.step();
         long end = System.nanoTime();
-
         double durationMs = (end - start) / 1_000_000.0;
         double averageIterationsMS = durationMs/MAX_ITER;
 
-        System.out.println("Execution time (" + MAX_ITER + " iterations): "
-                        + durationMs + " ms."
-        );
-        System.out.println(
-                "Average iteration time: "
-                        + averageIterationsMS + " ms"
-        );
+        System.out.println("Execution time (" + MAX_ITER + " iterations): " + durationMs + " ms.");
+        System.out.println("Average iteration time: " + averageIterationsMS + " ms");
 
         //animation
         GraphPanel graphPanel = new GraphPanel(graphAnim, layoutAnim, durationMs, averageIterationsMS, mode);

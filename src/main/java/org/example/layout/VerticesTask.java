@@ -12,7 +12,6 @@ public class VerticesTask implements Callable<Void> {
     private final Graph graph;
     private final int start;
     private final int end;
-
     private final double temperature;
     private final double width;
     private final double height;

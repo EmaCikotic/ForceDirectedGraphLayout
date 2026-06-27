@@ -1,9 +1,9 @@
 package org.example.gui;
 
 import org.example.graph.Graph;
-import org.example.layout.FruchtermanReingold;
+import org.example.layout.sequential.FruchtermanReingold;
 import org.example.layout.Mode;
-import org.example.layout.ParallelFruchtermanReingold;
+import org.example.layout.parallel.ParallelFruchtermanReingold;
 import org.example.layout.LayoutAlgorithm;
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;

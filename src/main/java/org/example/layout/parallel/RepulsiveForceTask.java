@@ -1,4 +1,4 @@
-package org.example.layout;
+package org.example.layout.parallel;
 
 import org.example.graph.Graph;
 import org.example.graph.Vertex;

@@ -1,4 +1,4 @@
-package org.example.layout;
+package org.example.layout.distributed;
 
 public class DistributedFruchtermanReingold {
 }

@@ -1,10 +1,9 @@
-package org.example.layout;
+package org.example.layout.parallel;
 
 import org.example.graph.Edge;
 import org.example.graph.Graph;
 import org.example.graph.Vertex;
 import org.example.math.Vector2D;
-
 import java.util.concurrent.Callable;
 import org.example.graph.Graph;
 

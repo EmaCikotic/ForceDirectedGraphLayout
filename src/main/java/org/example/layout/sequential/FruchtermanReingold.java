@@ -1,11 +1,12 @@
-package org.example.layout;
+package org.example.layout.sequential;
 
 import org.example.graph.Edge;
 import org.example.graph.Graph;
 import org.example.graph.Vertex;
+import org.example.layout.LayoutAlgorithm;
 import org.example.math.Vector2D;
 
-public class FruchtermanReingold implements LayoutAlgorithm{
+public class FruchtermanReingold implements LayoutAlgorithm {
 
 
     private Graph graph;

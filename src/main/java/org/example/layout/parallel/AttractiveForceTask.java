@@ -14,11 +14,18 @@ public class AttractiveForceTask implements Callable<Vector2D[]> {
     private final int end;
     private final double k;
 
+    private final Vector2D[] localDisplacement;
+
     public AttractiveForceTask(Graph graph, int start, int end, double k) {
         this.graph = graph;
         this.start = start;
         this.end = end;
         this.k = k;
+        this.localDisplacement= new Vector2D[graph.vertices.size()]; // not in the parameter becasue every task creates its own arary
+
+        for (int i = 0; i < graph.vertices.size(); i++) {
+            this.localDisplacement[i] = new Vector2D(0, 0);
+        }
     }
 
 
@@ -29,9 +36,12 @@ public class AttractiveForceTask implements Callable<Vector2D[]> {
     @Override
     public Vector2D[] call() {
 
-        Vector2D[] localDisplacement = new Vector2D[graph.vertices.size()];
+        //reset every vector
+        for (int i = 0; i < graph.vertices.size(); i++) {
+            localDisplacement[i].x = 0;
+            localDisplacement[i].y = 0;
+        }
 
-        for (int i = 0; i < localDisplacement.length; i++) localDisplacement[i] = new Vector2D(0, 0);
 
         for (int i = start; i < end; i++) {
             Edge e = graph.edges.get(i);
@@ -43,9 +53,8 @@ public class AttractiveForceTask implements Callable<Vector2D[]> {
 
             if (distance > 0) {
                 Vector2D force = delta.normalize().multiply(attractiveForce(distance));
-
-                localDisplacement[v.index] = localDisplacement[v.index].subtract(force);
-                localDisplacement[u.index] = localDisplacement[u.index].add(force);
+                localDisplacement[v.index].subtractInPlace(force);
+                localDisplacement[u.index].addInPlace(force);
             }
         }
 

@@ -101,7 +101,7 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm {
             try {
                 Vector2D[] localDisplacement = future.get();
                 for (int i = 0; i < vertexCount; i++) {
-                    graph.vertices.get(i).displacement = graph.vertices.get(i).displacement.add(localDisplacement[i]);
+                    graph.vertices.get(i).displacement.addInPlace(localDisplacement[i]);
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();

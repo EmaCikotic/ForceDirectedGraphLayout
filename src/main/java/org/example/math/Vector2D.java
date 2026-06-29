@@ -36,4 +36,16 @@ public class Vector2D {
         }
         return new Vector2D(x / len, y / len);
     }
+
+    //when updating displacement dont create new objects,just update the values
+    public void addInPlace( Vector2D other){
+        this.x+=other.x;
+        this.y+=other.y;
+    }
+
+    public void subtractInPlace( Vector2D other){
+        this.x-= other.x;;
+        this.y-= other.y;
+
+    }
 }

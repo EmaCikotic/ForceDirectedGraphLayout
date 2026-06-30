@@ -136,9 +136,19 @@ public class GraphInput {
                 break;
 
             case DISTRIBUTED:
-                layoutAnim = new DistributedFruchtermanReingold(graphAnim, width, height, c);
-                System.out.println("Distributed version");
-                break;
+                frame.dispose();//remove the previous window
+                JOptionPane.showMessageDialog(
+                        null,
+                        """
+                        The distributed mode must be run
+                        using the DistributedMain MPJ configuration.
+                        """,
+                        "Distributed Mode",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                return;
+
+          //so the error:  "Variable 'layoutAnim' might not have been initialized " disappears
             default:
                 throw new IllegalStateException("Unexpected mode: " + mode);
         }

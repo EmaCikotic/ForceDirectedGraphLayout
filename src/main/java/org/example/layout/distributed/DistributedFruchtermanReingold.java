@@ -1,8 +1,7 @@
 package org.example.layout.distributed;
-
 import org.example.graph.Graph;
-
 import org.example.layout.LayoutAlgorithm;
+import mpi.MPI;
 
 public class DistributedFruchtermanReingold implements LayoutAlgorithm {
     private Graph graph;
@@ -21,8 +20,13 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
     }
     @Override
     public void step() {
-        throw new UnsupportedOperationException(
-                "Distributed implementation not yet available."
-        );
+
+
+        int rank = MPI.COMM_WORLD.Rank();
+        int size = MPI.COMM_WORLD.Size();
+
+        System.out.println("Hello from process " + rank + " of " + size);
+
+        MPI.Finalize();
     }
 }

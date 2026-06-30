@@ -1,6 +1,7 @@
 package org.example.gui;
 
 import org.example.graph.Graph;
+import org.example.layout.distributed.DistributedFruchtermanReingold;
 import org.example.layout.sequential.FruchtermanReingold;
 import org.example.layout.Mode;
 import org.example.layout.parallel.ParallelFruchtermanReingold;
@@ -135,10 +136,9 @@ public class GraphInput {
                 break;
 
             case DISTRIBUTED:
-                // later
-                throw new UnsupportedOperationException(
-                        "Distributed not implemented yet"
-                );
+                layoutAnim = new DistributedFruchtermanReingold(graphAnim, width, height, c);
+                System.out.println("Distributed version");
+                break;
             default:
                 throw new IllegalStateException("Unexpected mode: " + mode);
         }

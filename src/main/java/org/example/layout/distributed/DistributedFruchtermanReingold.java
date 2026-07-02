@@ -1,4 +1,5 @@
 package org.example.layout.distributed;
+import org.example.graph.Edge;
 import org.example.graph.Graph;
 import org.example.graph.Vertex;
 import org.example.layout.LayoutAlgorithm;
@@ -22,11 +23,13 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
     private final int start;
 
     private final int end;
-
     private static final int ROOT =0;
 
     private double repulsiveForce(double distance) {
         return (k * k) / distance;
+    }
+    private double attractiveForce(double distance) {
+        return (distance * distance) / k;
     }
 
     public DistributedFruchtermanReingold(Graph graph, double width, double height, double c) {
@@ -47,69 +50,120 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
         this.start = rank * chunkSize;
         this.end = Math.min(start + chunkSize, vertexCount);
 
-        //pls work
-        System.out.println("Process: " + rank+ " vertices: start "+ start+ " end "+ (end-1));
-    }
 
-    @Override
-    public void step() {
+     }
 
-        //step 1
-        for (int i = start; i < end; i++) {
-            Vertex v= graph.vertices.get(i);
-            v.displacement.x=0;
-            v.displacement.y=0;
-        }
+        @Override
+        public void step() {
 
-        //step 2
-        for (int i = start; i < end ; i++) {
-            Vertex v = graph.vertices.get(i);
+            //step 1
+            for (int i = start; i < end; i++) {
+                Vertex v = graph.vertices.get(i);
+                v.displacement.x = 0;
+                v.displacement.y = 0;
+            }
 
-            for(int j = 0; j < graph.vertices.size(); j++){
-                Vertex u = graph.vertices.get(j);
+            //step 2
+            for (int i = start; i < end; i++) {
+                Vertex v = graph.vertices.get(i);
 
-                if (v.index!= u.index){
-                    Vector2D delta= v.position.subtract(u.position);
-                    double distance=delta.length(); //how far apart are the vertices
+                for (int j = 0; j < graph.vertices.size(); j++) {
+                    Vertex u = graph.vertices.get(j);
 
-                    //potential overflow safeguard
-                    if (distance>0){
-                        Vector2D force= delta.normalize().multiply(repulsiveForce(distance));
-                        v.displacement=v.displacement.add(force);
+                    if (v.index != u.index) {
+                        Vector2D delta = v.position.subtract(u.position);
+                        double distance = delta.length(); //how far apart are the vertices
+
+                        //potential overflow safeguard
+                        if (distance > 0) {
+                            Vector2D force = delta.normalize().multiply(repulsiveForce(distance));
+                            v.displacement = v.displacement.add(force);
+                        }
                     }
                 }
             }
-        }
+            //edges
+            for (Edge e : graph.edges) {
 
-        double [] sendbBuffer = new double[(end - start) *2]; //every process sends its own displacement values
-        double [] recvBuffer = null;
-
-        //only root receives everyone's data
-        if (rank == ROOT){
-            recvBuffer = new double[vertexCount * 2];
-        }
-
-        for (int i = start; i < end ; i++) {
-            Vertex v = graph.vertices.get(i);
-            int local= i-start;
-
-           sendbBuffer[2*local]=v.displacement.x;
-           sendbBuffer[2*local+1]= v.displacement.y;
-        }
-
-        //send to the root
-        MPI.COMM_WORLD.Gather(sendbBuffer,0,sendbBuffer.length,MPI.DOUBLE,recvBuffer,0,sendbBuffer.length, MPI.DOUBLE, ROOT);
+                Vertex v = e.v;
+                Vertex u = e.u;
+                Vector2D delta = v.position.subtract(u.position);
+                double distance = delta.length();
 
 
-        //root has all the vertices now
-        if (rank == ROOT) {
+                if (distance > 0) {
+                    Vector2D force = delta.normalize().multiply(attractiveForce(distance));
+                    // Only update vertices owned by this process
+                    if (v.index >= start && v.index < end) {
+                        v.displacement = v.displacement.subtract(force);
+                    }
+                    if (u.index >= start && u.index < end) {
+                        u.displacement = u.displacement.add(force);
+                    }
+                }
+            }
+
+            double[] sendbBuffer = new double[(end - start) * 2]; //every process sends its own displacement values
+            double[] recvBuffer = null;
+
+            //only root receives everyone's data
+            if (rank == ROOT) {
+                recvBuffer = new double[vertexCount * 2];
+            }
+
+            for (int i = start; i < end; i++) {
+                Vertex v = graph.vertices.get(i);
+                int local = i - start;
+
+                sendbBuffer[2 * local] = v.displacement.x;
+                sendbBuffer[2 * local + 1] = v.displacement.y;
+            }
+
+            //send to the root
+            MPI.COMM_WORLD.Gather(sendbBuffer, 0, sendbBuffer.length, MPI.DOUBLE, recvBuffer, 0, sendbBuffer.length, MPI.DOUBLE, ROOT);
+
+
+            double[] positionBuffer = new double[vertexCount * 2];
+
+            //root has all the vertices now
+            if (rank == ROOT) {
+                for (int i = 0; i < vertexCount; i++) {
+                    Vertex v = graph.vertices.get(i);
+
+                    v.displacement.x = recvBuffer[2 * i];
+                    v.displacement.y = recvBuffer[2 * i + 1];
+                }
+
+                //update vertex positions
+                for (Vertex v : graph.vertices) {
+                    double displLength = v.displacement.length();
+
+                    if (displLength > 0) {
+                        Vector2D move = v.displacement.normalize().multiply(Math.min(displLength, temperature));
+                        v.position = v.position.add(move);
+                        v.position.x = Math.min(Math.max(v.position.x, 0), width);
+                        v.position.y = Math.min(Math.max(v.position.y, 0), height);
+                    }
+                }
+
+                //pack updated positions into positionBuffer
+                for (int i = 0; i < vertexCount; i++) {
+                    Vertex v = graph.vertices.get(i);
+                    positionBuffer[2 * i] = v.position.x;
+                    positionBuffer[2 * i + 1] = v.position.y;
+                }
+
+                temperature*=0.95;
+            }
+
+            //every process has recieved the updated position
+            MPI.COMM_WORLD.Bcast(positionBuffer, 0, positionBuffer.length, MPI.DOUBLE, ROOT);
+
             for (int i = 0; i < vertexCount; i++) {
                 Vertex v = graph.vertices.get(i);
-
-                v.displacement.x = recvBuffer[2*i];
-                v.displacement.y = recvBuffer[2*i+1];
+                v.position.x = positionBuffer[2 * i];
+                v.position.y = positionBuffer[2 * i + 1];
             }
         }
-
-    }
 }
+

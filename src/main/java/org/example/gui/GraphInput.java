@@ -62,7 +62,7 @@ public class GraphInput {
         ((AbstractDocument) seedText.getDocument())
                 .setDocumentFilter(new IntegerFilter());
         ((AbstractDocument) cText.getDocument())
-                .setDocumentFilter(new IntegerFilter());
+                .setDocumentFilter(new DoubleFilter());
 
 
         JButton button = new JButton("Generate Graph");

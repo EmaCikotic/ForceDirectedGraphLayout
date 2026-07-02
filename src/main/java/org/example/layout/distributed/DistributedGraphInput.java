@@ -112,11 +112,6 @@ public class DistributedGraphInput {
          V = Integer.parseInt(verticesText.getText());
          E = Integer.parseInt(edgesText.getText());
 
-
-
-
-
-
         generated = true;
         frame.dispose();
 

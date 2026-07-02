@@ -104,7 +104,7 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
             }
 
             double[] sendbBuffer = new double[(end - start) * 2]; //every process sends its own displacement values
-            double[] recvBuffer = null;
+            double[] recvBuffer = new double[vertexCount * 2];; //if its null we get an error
 
             //only root receives everyone's data
             if (rank == ROOT) {
@@ -121,7 +121,6 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
 
             //send to the root
             MPI.COMM_WORLD.Gather(sendbBuffer, 0, sendbBuffer.length, MPI.DOUBLE, recvBuffer, 0, sendbBuffer.length, MPI.DOUBLE, ROOT);
-
 
             double[] positionBuffer = new double[vertexCount * 2];
 
@@ -158,7 +157,6 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
 
             //every process has recieved the updated position
             MPI.COMM_WORLD.Bcast(positionBuffer, 0, positionBuffer.length, MPI.DOUBLE, ROOT);
-
             for (int i = 0; i < vertexCount; i++) {
                 Vertex v = graph.vertices.get(i);
                 v.position.x = positionBuffer[2 * i];

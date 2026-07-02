@@ -27,7 +27,6 @@ public class GraphPanel extends JPanel {
         this.durationMs = durationMs;
         this.averageIterationsMS=averageIterationsMS;
         this.mode = mode;
-        setBackground(Color.WHITE);
     }
 
     public void startAnimation() {

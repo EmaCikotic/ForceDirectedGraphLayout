@@ -30,6 +30,8 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm {
     private final int vertexCount;
     private final int chunkSize;
 
+    private final boolean debug;
+
 
     //to avoid duplication
     private void waitForTasks(){
@@ -42,7 +44,18 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm {
         }
     }
 
-    public ParallelFruchtermanReingold(Graph graph, double width, double height, double c) {
+    //constructor overloading
+    //the first one like a default
+    //the second one i need boolean so i dont get chunks printed in the performance benchmark
+    public ParallelFruchtermanReingold(
+            Graph graph,
+            double width,
+            double height,
+            double c
+    ) {
+        this(graph, width, height, c, true);
+    }
+    public ParallelFruchtermanReingold(Graph graph, double width, double height, double c, boolean debug) {
         this.graph = graph;
         double area = width * height;
         this.k = c * Math.sqrt(area / graph.vertices.size());
@@ -52,11 +65,16 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm {
 
         this.vertexCount = graph.vertices.size();
         this.chunkSize = (int) Math.ceil((double) this.vertexCount / THREADS);
+        this.debug=debug;
 
-        for (int i = 0; i < THREADS; i++) {
-            int start = i * chunkSize;
-            int end = Math.min(start + chunkSize, vertexCount);
-            System.out.println("Chunk " + i + " -> vertices " + start + " to " + (end - 1));
+        if (debug) {
+            for (int i = 0; i < THREADS; i++) {
+                int start = i * chunkSize;
+                int end = Math.min(start + chunkSize, vertexCount);
+                System.out.println(
+                        "Chunk " + i + " -> vertices " + start + " to " + (end - 1)
+                );
+            }
         }
     }
 

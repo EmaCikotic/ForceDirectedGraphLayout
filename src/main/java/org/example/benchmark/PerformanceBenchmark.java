@@ -65,7 +65,7 @@ public class PerformanceBenchmark {
 
                // sequential and parallel layouts
                FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph,WIDTH,HEIGHT,C);
-               ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph,WIDTH,HEIGHT,C);
+               ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph,WIDTH,HEIGHT,C, false);
 
                totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
                totalParallelTime += benchmark(parallel, Mode.PARALLEL);

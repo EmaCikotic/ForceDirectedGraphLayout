@@ -61,8 +61,16 @@ public class PerformanceBenchmark {
         try {
             PrintWriter writer = new PrintWriter("benchmark_results.csv");
 
+            //header
             writer.println(
-                    "experiment,vertices,edges,avg_sequential_ms,avg_parallel_ms,speedup"
+                    "experiment," +
+                            "vertices," +
+                            "edges," +
+                            "avg_sequential_ms," +
+                            "avg_parallel_ms," +
+                            "avg_iteration_sequential_ms," +
+                            "avg_iteration_parallel_ms," +
+                            "speedup"
             );
 
             // warm-up before benchmark measurements
@@ -112,6 +120,9 @@ public class PerformanceBenchmark {
 
                 double speedup = avgSequentialTime / avgParallelTime;
 
+                double avgSequentialIteration = avgSequentialTime / ITERATIONS;
+                double avgParallelIteration = avgParallelTime / ITERATIONS;
+
                 System.out.println("\n===== RESULTS FOR " + vertex + " VERTICES =====");
                 System.out.println("Average Sequential: " + avgSequentialTime + " ms");
                 System.out.println("Average Parallel: " + avgParallelTime + " ms");
@@ -120,11 +131,13 @@ public class PerformanceBenchmark {
                 // save vertex result to CSV
                 writer.printf(
                         Locale.US,
-                        "VERTEX,%d,%d,%.3f,%.3f,%.3f%n",
+                        "VERTEX,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f%n",
                         vertex,
                         EDGES,
                         avgSequentialTime,
                         avgParallelTime,
+                        avgSequentialIteration,
+                        avgParallelIteration,
                         speedup
                 );
 
@@ -162,6 +175,9 @@ public class PerformanceBenchmark {
 
                 double speedup = avgSequentialTime / avgParallelTime;
 
+                double avgSequentialIteration = avgSequentialTime / ITERATIONS;
+                double avgParallelIteration = avgParallelTime / ITERATIONS;
+
                 System.out.println("\n===== RESULTS FOR " + edge + " EDGES =====");
                 System.out.println("Average Sequential: " + avgSequentialTime + " ms");
                 System.out.println("Average Parallel: " + avgParallelTime + " ms");
@@ -170,11 +186,13 @@ public class PerformanceBenchmark {
                 // save edge result to CSV
                 writer.printf(
                         Locale.US,
-                        "EDGE,%d,%d,%.3f,%.3f,%.3f%n",
+                        "EDGE,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f%n",
                         FIXED_VERTICES,
                         edge,
                         avgSequentialTime,
                         avgParallelTime,
+                        avgSequentialIteration,
+                        avgParallelIteration,
                         speedup
                 );
             }

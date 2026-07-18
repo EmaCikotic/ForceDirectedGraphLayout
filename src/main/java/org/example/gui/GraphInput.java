@@ -148,7 +148,7 @@ public class GraphInput {
                 );
                 return;
 
-          //so the error:  "Variable 'layoutAnim' might not have been initialized " disappears
+                //so the error:  "Variable 'layoutAnim' might not have been initialized " disappears
             default:
                 throw new IllegalStateException("Unexpected mode: " + mode);
         }

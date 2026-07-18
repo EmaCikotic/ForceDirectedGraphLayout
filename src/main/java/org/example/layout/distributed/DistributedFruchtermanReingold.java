@@ -50,7 +50,13 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
         this.start = rank * chunkSize;
         this.end = Math.min(start + chunkSize, vertexCount);
 
-
+        //to see which vertices are assigned to each process
+        System.out.println(
+                "Rank " + rank +
+                        ": start=" + start +
+                        ", end=" + end +
+                        ", vertices=" + (end - start)
+        );
      }
 
         @Override
@@ -103,8 +109,19 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
                 }
             }
 
-            double[] sendbBuffer = new double[(end - start) * 2]; //every process sends its own displacement values
-            double[] recvBuffer = new double[vertexCount * 2];; //if its null we get an error
+            int[] recvCounts = new int[processes];
+            int[] displacements = new int[processes];
+
+            for (int r = 0; r < processes; r++) {
+                int rankStart = r * chunkSize;
+                int rankEnd = Math.min(rankStart + chunkSize, vertexCount);
+
+                recvCounts[r] = (rankEnd - rankStart) * 2;
+                displacements[r] = rankStart * 2;
+            }
+
+            double[] sendBuffer = new double[(end - start) * 2]; //every process sends its own displacement values
+            double[] recvBuffer = new double[vertexCount * 2];
 
             //only root receives everyone's data
             if (rank == ROOT) {
@@ -115,12 +132,15 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
                 Vertex v = graph.vertices.get(i);
                 int local = i - start;
 
-                sendbBuffer[2 * local] = v.displacement.x;
-                sendbBuffer[2 * local + 1] = v.displacement.y;
+                sendBuffer[2 * local] = v.displacement.x;
+                sendBuffer[2 * local + 1] = v.displacement.y;
             }
 
             //send to the root
-            MPI.COMM_WORLD.Gather(sendbBuffer, 0, sendbBuffer.length, MPI.DOUBLE, recvBuffer, 0, sendbBuffer.length, MPI.DOUBLE, ROOT);
+            //http://mpjexpress.org/docs/javadocs/mpi/Intracomm.html for gatehrv
+            //Gatherv for different-sized chunks of displacement values from all processes to root
+            MPI.COMM_WORLD.Gatherv(sendBuffer, 0, sendBuffer.length, MPI.DOUBLE,
+                    recvBuffer, 0, recvCounts, displacements, MPI.DOUBLE, ROOT);
 
             double[] positionBuffer = new double[vertexCount * 2];
 

@@ -17,6 +17,8 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
     private final int rank;
     private final int processes;
 
+    private final boolean debug;
+
     private final int vertexCount;
     private final int chunkSize;
 
@@ -37,7 +39,18 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
         return (distance * distance) / k;
     }
 
-    public DistributedFruchtermanReingold(Graph graph, double width, double height, double c) {
+    //the first one like a default
+    //the second one i need boolean so i dont get chunks printed in the performance benchmark
+    public DistributedFruchtermanReingold(
+            Graph graph,
+            double width,
+            double height,
+            double c
+    ) {
+        this(graph, width, height, c, true);
+    }
+
+    public DistributedFruchtermanReingold(Graph graph, double width, double height, double c, boolean debug) {
         this.graph = graph;
         double area = width * height;
         this.k = c * Math.sqrt(area / graph.vertices.size());
@@ -47,6 +60,7 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
 
         this.rank=MPI.COMM_WORLD.Rank(); //me
         this.processes=MPI.COMM_WORLD.Size(); //nodes
+        this.debug=debug;
 
         this.vertexCount = graph.vertices.size();
         this.chunkSize = (int) Math.ceil((double) this.vertexCount / processes);
@@ -56,12 +70,14 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
         this.end = Math.min(start + chunkSize, vertexCount);
 
         //to see which vertices are assigned to each process
-        System.out.println(
-                "Rank " + rank +
-                        ": start=" + start +
-                        ", end=" + end +
-                        ", vertices=" + (end - start)
-        );
+        if (debug) {
+            System.out.println(
+                    "Rank " + rank +
+                            ": start=" + start +
+                            ", end=" + end +
+                            ", vertices=" + (end - start)
+            );
+        }
 
 
         //moved from step(): Calculated once since the vertex distribution does not change between iterations

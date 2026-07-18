@@ -5,15 +5,13 @@ import org.example.layout.Mode;
 import org.example.layout.parallel.ParallelFruchtermanReingold;
 import org.example.layout.sequential.FruchtermanReingold;
 
-import javax.sound.midi.Soundbank;
-
-
 public class PerformanceBenchmark {
 
-    private static void benchmark(LayoutAlgorithm algorithm, Mode mode) {
+    private static double  benchmark(LayoutAlgorithm algorithm, Mode mode) {
 
         //measure time (no gui)
         long start = System.nanoTime();
+
         for (int i = 0; i < ITERATIONS; i++) {
             algorithm.step(); //can refer to both sequential and parallel because of the interface
         }
@@ -29,10 +27,14 @@ public class PerformanceBenchmark {
         System.out.println("Average iteration time: " + averageIterationsMS + " ms");
         System.out.println("                                                       ");
 
+        return durationMs;
+
     }
 
     private static final int[] VERTEX_SIZES = {500, 1000, 2000, 3000};
     private static final int ITERATIONS = 500;
+
+    private static final int RUNS = 5; //repeat benchmark 5 (or n )  times
     private static final int WIDTH = 3000;
     private static final int HEIGHT = 3000;
     private static final int EDGES = 1000;
@@ -47,19 +49,35 @@ public class PerformanceBenchmark {
            System.out.println("\nTesting " + vertex + " vertices");
            System.out.println("----------------------------------");
 
+           double totalSequentialTime = 0;
+           double totalParallelTime = 0;
 
-            Graph sequentialGraph =
-                    Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
 
-            Graph parallelGraph =
-                    Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
+           for (int run = 1; run <= RUNS; run++) {
 
-            // sequential and parallel layouts
-            FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph,WIDTH,HEIGHT,C);
-            ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph,WIDTH,HEIGHT,C);
+               System.out.println("\nRun " + run + " of " + RUNS);
 
-            benchmark(sequential, Mode.SEQUENTIAL);
-            benchmark(parallel, Mode.PARALLEL);
+               Graph sequentialGraph =
+                       Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
+
+               Graph parallelGraph =
+                       Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
+
+               // sequential and parallel layouts
+               FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph,WIDTH,HEIGHT,C);
+               ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph,WIDTH,HEIGHT,C);
+
+               totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
+               totalParallelTime += benchmark(parallel, Mode.PARALLEL);
+           }
+
+           double avgSequentialTime = totalSequentialTime / RUNS;
+           double avgParallelTime = totalParallelTime / RUNS;
+
+           System.out.println("\n===== RESULTS FOR " + vertex + " VERTICES =====");
+           System.out.println("Average Sequential: " + avgSequentialTime + " ms");
+           System.out.println("Average Parallel: " + avgParallelTime + " ms");
+
        }
 
     }

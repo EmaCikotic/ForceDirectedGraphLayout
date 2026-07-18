@@ -3,6 +3,10 @@ import mpi.MPI;
 import org.example.graph.Graph;
 import org.example.layout.distributed.DistributedFruchtermanReingold;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter; //for CSV https://www.geeksforgeeks.org/java/java-io-printwriter-class-java-set-1/
+import java.util.Locale; //so decimal numbers have a dot and not a comma
+
 public class DistributedPerformanceBenchmark {
 
     private static final int[] VERTEX_SIZES = {500, 1000, 2000, 3000};
@@ -65,84 +69,126 @@ public class DistributedPerformanceBenchmark {
 
     public static void main(String[] args) {
 
-        MPI.Init(args);
+            MPI.Init(args);
+            int rank = MPI.COMM_WORLD.Rank();
+            int processes = MPI.COMM_WORLD.Size();
+            PrintWriter writer = null;
 
-        int rank = MPI.COMM_WORLD.Rank();
+        try {
 
-        Graph warmupGraph = Graph.randomGraph(1000, 1000, WIDTH, HEIGHT, SEED);
-
-        DistributedFruchtermanReingold warmupLayout = new DistributedFruchtermanReingold(warmupGraph, WIDTH, HEIGHT, C, false);
-        warmup(warmupLayout);
-
-        if (rank == 0) {
-            System.out.println("Warm-up complete.");
-        }
-        // TEST 1: VERTEX TEST
-        for (int vertex : VERTEX_SIZES) {
-
-            if (rank == 0) {
-                System.out.println("\nTesting " + vertex + " vertices");
-                System.out.println("----------------------------------");
+            if (rank == 0){
+                writer = new PrintWriter("distributed_benchmark_results.csv");
+                writer.println(
+                        "experiment," +
+                                "vertices," +
+                                "edges," +
+                                "processes," +
+                                "avg_distributed_ms," +
+                                "avg_iteration_distributed_ms"
+                );
             }
 
-            double totalDistributedTime = 0;
-            for (int run = 1; run <= RUNS; run++) {
+
+            Graph warmupGraph = Graph.randomGraph(1000, 1000, WIDTH, HEIGHT, SEED);
+
+            DistributedFruchtermanReingold warmupLayout = new DistributedFruchtermanReingold(warmupGraph, WIDTH, HEIGHT, C, false);
+            warmup(warmupLayout);
+
+            if (rank == 0) {
+                System.out.println("Warm-up complete.");
+
+            }
+            // TEST 1: VERTEX TEST
+            for (int vertex : VERTEX_SIZES) {
 
                 if (rank == 0) {
-                    System.out.println("\nRun " + run + " of " + RUNS);
+                    System.out.println("\nTesting " + vertex + " vertices");
+                    System.out.println("----------------------------------");
                 }
 
-                Graph graph = Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
+                double totalDistributedTime = 0;
+                for (int run = 1; run <= RUNS; run++) {
 
-                DistributedFruchtermanReingold distributed = new DistributedFruchtermanReingold(graph, WIDTH, HEIGHT,C, false);
+                    if (rank == 0) {
+                        System.out.println("\nRun " + run + " of " + RUNS);
+                    }
 
-                totalDistributedTime += benchmark(distributed, rank);
+                    Graph graph = Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
 
-            }
-            double avgDistributedTime = totalDistributedTime / RUNS;
-            double avgDistributedIteration = avgDistributedTime / ITERATIONS;
+                    DistributedFruchtermanReingold distributed = new DistributedFruchtermanReingold(graph, WIDTH, HEIGHT, C, false);
 
-            if (rank == 0) {
-                System.out.println("\n===== RESULTS FOR " + vertex + " VERTICES =====");
-                System.out.println("Average Distributed: " + avgDistributedTime + " ms");
-                System.out.println("Average iteration: " + avgDistributedIteration + " ms");
-            }
+                    totalDistributedTime += benchmark(distributed, rank);
 
-        }
-        // TEST 2: EDGE TEST
-        for (int edge : EDGE_SIZES) {
-
-            if (rank == 0) {
-                System.out.println("                                  ");
-                System.out.println("\nTesting " + edge + " edges");
-                System.out.println("----------------------------------");
-            }
-
-            double totalDistributedTime = 0;
-            for (int run = 1; run <= RUNS; run++) {
+                }
+                double avgDistributedTime = totalDistributedTime / RUNS;
+                double avgDistributedIteration = avgDistributedTime / ITERATIONS;
 
                 if (rank == 0) {
-                    System.out.println("\nRun " + run + " of " + RUNS);
+                    System.out.println("\n===== RESULTS FOR " + vertex + " VERTICES =====");
+                    System.out.println("Average Distributed: " + avgDistributedTime + " ms");
+                    System.out.println("Average iteration: " + avgDistributedIteration + " ms");
+
+                    writer.printf(
+                            Locale.US,
+                            "VERTEX,%d,%d,%d,%.3f,%.3f%n",
+                            vertex,
+                            EDGES,
+                            processes,
+                            avgDistributedTime,
+                            avgDistributedIteration
+                    );
                 }
 
-                Graph graph = Graph.randomGraph(FIXED_VERTICES, edge, WIDTH, HEIGHT, SEED);
-
-                DistributedFruchtermanReingold distributed = new DistributedFruchtermanReingold(graph, WIDTH, HEIGHT,C, false);
-
-                totalDistributedTime += benchmark(distributed, rank);
             }
-            double avgDistributedTime = totalDistributedTime / RUNS;
-            double avgDistributedIteration = avgDistributedTime / ITERATIONS;
+            // TEST 2: EDGE TEST
+            for (int edge : EDGE_SIZES) {
 
+                if (rank == 0) {
+                    System.out.println("                                  ");
+                    System.out.println("\nTesting " + edge + " edges");
+                    System.out.println("----------------------------------");
+                }
+
+                double totalDistributedTime = 0;
+                for (int run = 1; run <= RUNS; run++) {
+
+                    if (rank == 0) {
+                        System.out.println("\nRun " + run + " of " + RUNS);
+                    }
+
+                    Graph graph = Graph.randomGraph(FIXED_VERTICES, edge, WIDTH, HEIGHT, SEED);
+
+                    DistributedFruchtermanReingold distributed = new DistributedFruchtermanReingold(graph, WIDTH, HEIGHT, C, false);
+
+                    totalDistributedTime += benchmark(distributed, rank);
+                }
+                double avgDistributedTime = totalDistributedTime / RUNS;
+                double avgDistributedIteration = avgDistributedTime / ITERATIONS;
+
+                if (rank == 0) {
+                    System.out.println("\n===== RESULTS FOR " + edge + " EDGES =====");
+                    System.out.println("                                             ");
+                    System.out.println("Average Distributed: " + avgDistributedTime + " ms");
+                    System.out.println("Average iteration: " + avgDistributedIteration + " ms");
+
+                    writer.printf(
+                            Locale.US,
+                            "EDGE,%d,%d,%d,%.3f,%.3f%n",
+                            FIXED_VERTICES,
+                            edge,
+                            processes,
+                            avgDistributedTime,
+                            avgDistributedIteration
+                    );
+                }
+            }
             if (rank == 0) {
-                System.out.println("\n===== RESULTS FOR " + edge + " EDGES =====");
-                System.out.println("                                             ");
-                System.out.println("Average Distributed: " + avgDistributedTime + " ms");
-                System.out.println("Average iteration: " + avgDistributedIteration + " ms");
+                writer.close();
             }
 
+            MPI.Finalize();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
-
-        MPI.Finalize();
     }
 }

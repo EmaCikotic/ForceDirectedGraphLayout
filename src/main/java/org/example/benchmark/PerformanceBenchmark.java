@@ -4,6 +4,7 @@ import org.example.layout.LayoutAlgorithm;
 import org.example.layout.Mode;
 import org.example.layout.parallel.ParallelFruchtermanReingold;
 import org.example.layout.sequential.FruchtermanReingold;
+import java.io.PrintWriter; //for CSV https://www.geeksforgeeks.org/java/java-io-printwriter-class-java-set-1/
 
 public class PerformanceBenchmark {
 
@@ -48,83 +49,119 @@ public class PerformanceBenchmark {
 
     public static void main(String[] args) {
 
+        try {
+            PrintWriter writer = new PrintWriter("benchmark_results.csv");
 
-        //TEST 1: VERTEX TEXT
-       for(  int vertex  : VERTEX_SIZES){
-
-           System.out.println("\nTesting " + vertex + " vertices");
-           System.out.println("----------------------------------");
-
-           double totalSequentialTime = 0;
-           double totalParallelTime = 0;
+            writer.println(
+                    "experiment,vertices,edges,avg_sequential_ms,avg_parallel_ms,speedup"
+            );
 
 
-           for (int run = 1; run <= RUNS; run++) {
+            //TEST 1: VERTEX TEXT
+            for(  int vertex  : VERTEX_SIZES){
 
-               System.out.println("\nRun " + run + " of " + RUNS);
+                System.out.println("\nTesting " + vertex + " vertices");
+                System.out.println("----------------------------------");
 
-               Graph sequentialGraph =
-                       Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
+                double totalSequentialTime = 0;
+                double totalParallelTime = 0;
 
-               Graph parallelGraph =
-                       Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
 
-               // sequential and parallel layouts
-               FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph,WIDTH,HEIGHT,C);
-               ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph,WIDTH,HEIGHT,C, false);
+                for (int run = 1; run <= RUNS; run++) {
 
-               totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
-               totalParallelTime += benchmark(parallel, Mode.PARALLEL);
-           }
+                    System.out.println("\nRun " + run + " of " + RUNS);
 
-           double avgSequentialTime = totalSequentialTime / RUNS;
-           double avgParallelTime = totalParallelTime / RUNS;
+                    Graph sequentialGraph =
+                            Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
 
-           double speedup = avgSequentialTime / avgParallelTime;
+                    Graph parallelGraph =
+                            Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
 
-           System.out.println("\n===== RESULTS FOR " + vertex + " VERTICES =====");
-           System.out.println("Average Sequential: " + avgSequentialTime + " ms");
-           System.out.println("Average Parallel: " + avgParallelTime + " ms");
-           System.out.println("Speedup: " + speedup + "x");
+                    // sequential and parallel layouts
+                    FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph,WIDTH,HEIGHT,C);
+                    ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph,WIDTH,HEIGHT,C, false);
 
-       }
+                    totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
+                    totalParallelTime += benchmark(parallel, Mode.PARALLEL);
+                }
 
-        // TEST 2: edge benchmark - keep vertices fixed and change number of edges
-        for (int edge : EDGE_SIZES) {
+                double avgSequentialTime = totalSequentialTime / RUNS;
+                double avgParallelTime = totalParallelTime / RUNS;
 
-            System.out.println("\nTesting " + edge + " edges");
-            System.out.println("----------------------------------");
+                double speedup = avgSequentialTime / avgParallelTime;
 
-            double totalSequentialTime = 0;
-            double totalParallelTime = 0;
+                System.out.println("\n===== RESULTS FOR " + vertex + " VERTICES =====");
+                System.out.println("Average Sequential: " + avgSequentialTime + " ms");
+                System.out.println("Average Parallel: " + avgParallelTime + " ms");
+                System.out.println("Speedup: " + speedup + "x");
 
-            for (int run = 1; run <= RUNS; run++) {
+                // save vertex result to CSV
+                writer.println(
+                        "VERTEX," +
+                                vertex + "," +
+                                EDGES + "," +
+                                avgSequentialTime + "," +
+                                avgParallelTime + "," +
+                                speedup
+                );
 
-                System.out.println("\nRun " + run + " of " + RUNS);
-
-                Graph sequentialGraph = Graph.randomGraph(FIXED_VERTICES, edge, WIDTH, HEIGHT, SEED);
-
-                Graph parallelGraph = Graph.randomGraph(FIXED_VERTICES, edge, WIDTH, HEIGHT, SEED);
-
-                // sequential and parallel layouts
-                FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph, WIDTH, HEIGHT, C);
-
-                ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph, WIDTH, HEIGHT, C, false);
-
-                totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
-                totalParallelTime += benchmark(parallel, Mode.PARALLEL);
             }
 
-            double avgSequentialTime = totalSequentialTime / RUNS;
-            double avgParallelTime = totalParallelTime / RUNS;
+            // TEST 2: edge benchmark - keep vertices fixed and change number of edges
+            for (int edge : EDGE_SIZES) {
 
-            double speedup = avgSequentialTime / avgParallelTime;
+                System.out.println("\nTesting " + edge + " edges");
+                System.out.println("----------------------------------");
 
-            System.out.println("\n===== RESULTS FOR " + edge + " EDGES =====");
-            System.out.println("Average Sequential: " + avgSequentialTime + " ms");
-            System.out.println("Average Parallel: " + avgParallelTime + " ms");
-            System.out.println("Speedup: " + speedup + "x");
+                double totalSequentialTime = 0;
+                double totalParallelTime = 0;
+
+                for (int run = 1; run <= RUNS; run++) {
+
+                    System.out.println("\nRun " + run + " of " + RUNS);
+
+                    Graph sequentialGraph = Graph.randomGraph(FIXED_VERTICES, edge, WIDTH, HEIGHT, SEED);
+
+                    Graph parallelGraph = Graph.randomGraph(FIXED_VERTICES, edge, WIDTH, HEIGHT, SEED);
+
+                    // sequential and parallel layouts
+                    FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph, WIDTH, HEIGHT, C);
+
+                    ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph, WIDTH, HEIGHT, C, false);
+
+                    totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
+                    totalParallelTime += benchmark(parallel, Mode.PARALLEL);
+                }
+
+                double avgSequentialTime = totalSequentialTime / RUNS;
+                double avgParallelTime = totalParallelTime / RUNS;
+
+                double speedup = avgSequentialTime / avgParallelTime;
+
+                System.out.println("\n===== RESULTS FOR " + edge + " EDGES =====");
+                System.out.println("Average Sequential: " + avgSequentialTime + " ms");
+                System.out.println("Average Parallel: " + avgParallelTime + " ms");
+                System.out.println("Speedup: " + speedup + "x");
+
+                // save edge result to CSV
+                writer.println(
+                        "EDGE," +
+                                FIXED_VERTICES + "," +
+                                edge + "," +
+                                avgSequentialTime + "," +
+                                avgParallelTime + "," +
+                                speedup
+                );
+
+
+            }
+            writer.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+
 
     }
 }

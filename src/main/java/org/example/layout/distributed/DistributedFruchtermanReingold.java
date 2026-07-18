@@ -25,6 +25,9 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
 
     private final int[] recvCounts;
     private final int[] displacements;
+    private final double[] sendBuffer;
+    private final double[] recvBuffer;
+    private final double[] positionBuffer;
     private static final int ROOT =0;
 
     private double repulsiveForce(double distance) {
@@ -72,6 +75,10 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
             recvCounts[r] = (rankEnd - rankStart) * 2;
             displacements[r] = rankStart * 2;
         }
+
+        this.sendBuffer = new double[(end - start) * 2];
+        this.recvBuffer = new double[vertexCount * 2];
+        this.positionBuffer = new double[vertexCount * 2];
      }
 
         @Override
@@ -124,10 +131,6 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
                 }
             }
 
-
-            double[] sendBuffer = new double[(end - start) * 2]; //every process sends its own displacement values
-            double[] recvBuffer = new double[vertexCount * 2];
-
             for (int i = start; i < end; i++) {
                 Vertex v = graph.vertices.get(i);
                 int local = i - start;
@@ -141,8 +144,6 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
             //Gatherv for different-sized chunks of displacement values from all processes to root
             MPI.COMM_WORLD.Gatherv(sendBuffer, 0, sendBuffer.length, MPI.DOUBLE,
                     recvBuffer, 0, recvCounts, displacements, MPI.DOUBLE, ROOT);
-
-            double[] positionBuffer = new double[vertexCount * 2];
 
             //root has all the vertices now
             if (rank == ROOT) {

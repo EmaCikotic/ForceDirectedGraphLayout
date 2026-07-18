@@ -34,16 +34,22 @@ public class PerformanceBenchmark {
     private static final int[] VERTEX_SIZES = {500, 1000, 2000, 3000};
     private static final int ITERATIONS = 500;
 
+    private static final int EDGES = 1000; // fixed for vertex test
+    private static final int[] EDGE_SIZES = {500, 1000, 2000, 3000};
+
+    private static final int FIXED_VERTICES = 1000;//fixed for EDGE text
+
     private static final int RUNS = 5; //repeat benchmark 5 (or n )  times
     private static final int WIDTH = 3000;
     private static final int HEIGHT = 3000;
-    private static final int EDGES = 1000;
+
     private static final long SEED = 42;
     private static final double C = 1.0;
 
     public static void main(String[] args) {
 
 
+        //TEST 1: VERTEX TEXT
        for(  int vertex  : VERTEX_SIZES){
 
            System.out.println("\nTesting " + vertex + " vertices");
@@ -82,6 +88,43 @@ public class PerformanceBenchmark {
            System.out.println("Speedup: " + speedup + "x");
 
        }
+
+        // TEST 2: edge benchmark - keep vertices fixed and change number of edges
+        for (int edge : EDGE_SIZES) {
+
+            System.out.println("\nTesting " + edge + " edges");
+            System.out.println("----------------------------------");
+
+            double totalSequentialTime = 0;
+            double totalParallelTime = 0;
+
+            for (int run = 1; run <= RUNS; run++) {
+
+                System.out.println("\nRun " + run + " of " + RUNS);
+
+                Graph sequentialGraph = Graph.randomGraph(FIXED_VERTICES, edge, WIDTH, HEIGHT, SEED);
+
+                Graph parallelGraph = Graph.randomGraph(FIXED_VERTICES, edge, WIDTH, HEIGHT, SEED);
+
+                // sequential and parallel layouts
+                FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph, WIDTH, HEIGHT, C);
+
+                ParallelFruchtermanReingold parallel = new ParallelFruchtermanReingold(parallelGraph, WIDTH, HEIGHT, C, false);
+
+                totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
+                totalParallelTime += benchmark(parallel, Mode.PARALLEL);
+            }
+
+            double avgSequentialTime = totalSequentialTime / RUNS;
+            double avgParallelTime = totalParallelTime / RUNS;
+
+            double speedup = avgSequentialTime / avgParallelTime;
+
+            System.out.println("\n===== RESULTS FOR " + edge + " EDGES =====");
+            System.out.println("Average Sequential: " + avgSequentialTime + " ms");
+            System.out.println("Average Parallel: " + avgParallelTime + " ms");
+            System.out.println("Speedup: " + speedup + "x");
+        }
 
     }
 }

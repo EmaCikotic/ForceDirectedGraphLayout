@@ -5,6 +5,7 @@ import org.example.layout.Mode;
 import org.example.layout.parallel.ParallelFruchtermanReingold;
 import org.example.layout.sequential.FruchtermanReingold;
 import java.io.PrintWriter; //for CSV https://www.geeksforgeeks.org/java/java-io-printwriter-class-java-set-1/
+import java.util.Locale; //so decimal numners have a dot and not a comme
 
 public class PerformanceBenchmark {
 
@@ -97,6 +98,7 @@ public class PerformanceBenchmark {
 
                 // save vertex result to CSV
                 writer.printf(
+                        Locale.US,
                         "VERTEX,%d,%d,%.3f,%.3f,%.3f%n",
                         vertex,
                         EDGES,
@@ -145,6 +147,7 @@ public class PerformanceBenchmark {
 
                 // save edge result to CSV
                 writer.printf(
+                        Locale.US,
                         "EDGE,%d,%d,%.3f,%.3f,%.3f%n",
                         FIXED_VERTICES,
                         edge,

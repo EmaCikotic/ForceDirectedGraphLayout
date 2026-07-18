@@ -172,8 +172,6 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
                     positionBuffer[2 * i] = v.position.x;
                     positionBuffer[2 * i + 1] = v.position.y;
                 }
-
-                temperature*=0.95;
             }
 
             //every process has received the updated position
@@ -183,6 +181,8 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
                 v.position.x = positionBuffer[2 * i];
                 v.position.y = positionBuffer[2 * i + 1];
             }
+            //the same cooling for every process
+            temperature*=0.95;
         }
 }
 

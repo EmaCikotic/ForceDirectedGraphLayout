@@ -74,9 +74,12 @@ public class PerformanceBenchmark {
            double avgSequentialTime = totalSequentialTime / RUNS;
            double avgParallelTime = totalParallelTime / RUNS;
 
+           double speedup = avgSequentialTime / avgParallelTime;
+
            System.out.println("\n===== RESULTS FOR " + vertex + " VERTICES =====");
            System.out.println("Average Sequential: " + avgSequentialTime + " ms");
            System.out.println("Average Parallel: " + avgParallelTime + " ms");
+           System.out.println("Speedup: " + speedup + "x");
 
        }
 

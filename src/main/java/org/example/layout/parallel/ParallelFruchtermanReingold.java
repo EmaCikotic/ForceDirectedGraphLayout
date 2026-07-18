@@ -140,5 +140,9 @@ public class ParallelFruchtermanReingold implements LayoutAlgorithm {
 
         temperature*=0.95;
     }
+    // shut down the thread pool when it is no longer needed
+    public void shutdown() {
+        pool.shutdown();
+    }
 
 }

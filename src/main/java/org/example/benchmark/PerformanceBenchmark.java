@@ -5,9 +5,16 @@ import org.example.layout.Mode;
 import org.example.layout.parallel.ParallelFruchtermanReingold;
 import org.example.layout.sequential.FruchtermanReingold;
 import java.io.PrintWriter; //for CSV https://www.geeksforgeeks.org/java/java-io-printwriter-class-java-set-1/
-import java.util.Locale; //so decimal numners have a dot and not a comme
+import java.util.Locale; //so decimal numbers have a dot and not a comma
 
 public class PerformanceBenchmark {
+
+    private static void warmup(LayoutAlgorithm algorithm) {
+
+        for (int i = 0; i < WARMUP_ITERATIONS; i++) {
+            algorithm.step();
+        }
+    }
 
     private static double  benchmark(LayoutAlgorithm algorithm, Mode mode) {
 
@@ -36,6 +43,7 @@ public class PerformanceBenchmark {
     private static final int[] VERTEX_SIZES = {500, 1000, 2000, 3000};
     private static final int ITERATIONS = 500;
 
+    private static final int WARMUP_ITERATIONS = 50; //run a few times before start actually measuring
     private static final int EDGES = 1000; // fixed for vertex test
     private static final int[] EDGE_SIZES = {500, 1000, 2000, 3000};
 
@@ -57,6 +65,20 @@ public class PerformanceBenchmark {
                     "experiment,vertices,edges,avg_sequential_ms,avg_parallel_ms,speedup"
             );
 
+            // warm-up before benchmark measurements
+            Graph warmupSequentialGraph = Graph.randomGraph(1000, 1000, WIDTH, HEIGHT, SEED);
+
+            Graph warmupParallelGraph = Graph.randomGraph(1000, 1000, WIDTH, HEIGHT, SEED);
+
+            FruchtermanReingold warmupSequential = new FruchtermanReingold(warmupSequentialGraph, WIDTH, HEIGHT, C);
+            ParallelFruchtermanReingold warmupParallel = new ParallelFruchtermanReingold(warmupParallelGraph, WIDTH, HEIGHT, C, false);
+
+            warmup(warmupSequential);
+            warmup(warmupParallel);
+            warmupParallel.shutdown();
+
+            System.out.println("Warm-up complete.");
+
 
             //TEST 1: VERTEX TEXT
             for(  int vertex  : VERTEX_SIZES){
@@ -72,11 +94,9 @@ public class PerformanceBenchmark {
 
                     System.out.println("\nRun " + run + " of " + RUNS);
 
-                    Graph sequentialGraph =
-                            Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
+                    Graph sequentialGraph = Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
 
-                    Graph parallelGraph =
-                            Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
+                    Graph parallelGraph = Graph.randomGraph(vertex, EDGES, WIDTH, HEIGHT, SEED);
 
                     // sequential and parallel layouts
                     FruchtermanReingold sequential = new FruchtermanReingold(sequentialGraph,WIDTH,HEIGHT,C);
@@ -84,6 +104,7 @@ public class PerformanceBenchmark {
 
                     totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
                     totalParallelTime += benchmark(parallel, Mode.PARALLEL);
+                    parallel.shutdown();
                 }
 
                 double avgSequentialTime = totalSequentialTime / RUNS;
@@ -133,6 +154,7 @@ public class PerformanceBenchmark {
 
                     totalSequentialTime += benchmark(sequential, Mode.SEQUENTIAL);
                     totalParallelTime += benchmark(parallel, Mode.PARALLEL);
+                    parallel.shutdown();
                 }
 
                 double avgSequentialTime = totalSequentialTime / RUNS;
@@ -155,15 +177,11 @@ public class PerformanceBenchmark {
                         avgParallelTime,
                         speedup
                 );
-
             }
             writer.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-
     }
 }

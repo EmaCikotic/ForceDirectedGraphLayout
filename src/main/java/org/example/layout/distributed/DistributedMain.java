@@ -61,8 +61,7 @@ public class DistributedMain {
                         graphTime,
                         intParams[0],
                         intParams[1],
-                        cParam[0]
-                );
+                        cParam[0]);
 
         long start = System.nanoTime();
 
@@ -89,8 +88,7 @@ public class DistributedMain {
                         graphAnim,
                         intParams[0],
                         intParams[1],
-                        cParam[0]
-                );
+                        cParam[0]);
 
         DistributedGraphPanel panel = null;
 

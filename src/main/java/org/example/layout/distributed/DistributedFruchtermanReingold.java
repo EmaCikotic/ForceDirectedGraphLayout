@@ -21,8 +21,10 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
     private final int chunkSize;
 
     private final int start;
-
     private final int end;
+
+    private final int[] recvCounts;
+    private final int[] displacements;
     private static final int ROOT =0;
 
     private double repulsiveForce(double distance) {
@@ -57,6 +59,19 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
                         ", end=" + end +
                         ", vertices=" + (end - start)
         );
+
+
+        //moved from step(): Calculated once since the vertex distribution does not change between iterations
+        this.recvCounts = new int[processes];
+        this.displacements = new int[processes];
+
+        for (int r = 0; r < processes; r++) {
+            int rankStart = r * chunkSize;
+            int rankEnd = Math.min(rankStart + chunkSize, vertexCount);
+
+            recvCounts[r] = (rankEnd - rankStart) * 2;
+            displacements[r] = rankStart * 2;
+        }
      }
 
         @Override
@@ -109,24 +124,9 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
                 }
             }
 
-            int[] recvCounts = new int[processes];
-            int[] displacements = new int[processes];
-
-            for (int r = 0; r < processes; r++) {
-                int rankStart = r * chunkSize;
-                int rankEnd = Math.min(rankStart + chunkSize, vertexCount);
-
-                recvCounts[r] = (rankEnd - rankStart) * 2;
-                displacements[r] = rankStart * 2;
-            }
 
             double[] sendBuffer = new double[(end - start) * 2]; //every process sends its own displacement values
             double[] recvBuffer = new double[vertexCount * 2];
-
-            //only root receives everyone's data
-            if (rank == ROOT) {
-                recvBuffer = new double[vertexCount * 2];
-            }
 
             for (int i = start; i < end; i++) {
                 Vertex v = graph.vertices.get(i);
@@ -175,7 +175,7 @@ public class DistributedFruchtermanReingold implements LayoutAlgorithm {
                 temperature*=0.95;
             }
 
-            //every process has recieved the updated position
+            //every process has received the updated position
             MPI.COMM_WORLD.Bcast(positionBuffer, 0, positionBuffer.length, MPI.DOUBLE, ROOT);
             for (int i = 0; i < vertexCount; i++) {
                 Vertex v = graph.vertices.get(i);

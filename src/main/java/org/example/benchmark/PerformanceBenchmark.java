@@ -96,13 +96,13 @@ public class PerformanceBenchmark {
                 System.out.println("Speedup: " + speedup + "x");
 
                 // save vertex result to CSV
-                writer.println(
-                        "VERTEX," +
-                                vertex + "," +
-                                EDGES + "," +
-                                avgSequentialTime + "," +
-                                avgParallelTime + "," +
-                                speedup
+                writer.printf(
+                        "VERTEX,%d,%d,%.3f,%.3f,%.3f%n",
+                        vertex,
+                        EDGES,
+                        avgSequentialTime,
+                        avgParallelTime,
+                        speedup
                 );
 
             }
@@ -144,15 +144,14 @@ public class PerformanceBenchmark {
                 System.out.println("Speedup: " + speedup + "x");
 
                 // save edge result to CSV
-                writer.println(
-                        "EDGE," +
-                                FIXED_VERTICES + "," +
-                                edge + "," +
-                                avgSequentialTime + "," +
-                                avgParallelTime + "," +
-                                speedup
+                writer.printf(
+                        "EDGE,%d,%d,%.3f,%.3f,%.3f%n",
+                        FIXED_VERTICES,
+                        edge,
+                        avgSequentialTime,
+                        avgParallelTime,
+                        speedup
                 );
-
 
             }
             writer.close();

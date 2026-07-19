@@ -59,7 +59,7 @@ public class PerformanceBenchmark {
     public static void main(String[] args) {
 
         try {
-            PrintWriter writer = new PrintWriter("benchmark_results.csv");
+            PrintWriter writer = new PrintWriter("benchmarkingResults/benchmark_results.csv");
 
             //header
             writer.println(

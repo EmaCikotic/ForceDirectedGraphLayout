@@ -2,11 +2,11 @@ package org.example.benchmark;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Locale;
 
 public class BenchmarkResultsAnalysis {
 
     private static final String RESULTS_FOLDER = "benchmarkingResults/";
-
     private static final String SEQUENTIAL_PARALLEL_FILE =  RESULTS_FOLDER + "benchmark_results.csv";
 
     private static final String[] DISTRIBUTED_FILES = {
@@ -61,10 +61,19 @@ public class BenchmarkResultsAnalysis {
             System.out.println("\n===== DISTRIBUTED RESULTS =====");
             System.out.println("                                  ");
 
+            int vertexIndex = 0;
+            int edgeIndex = 0;
+
+            double[] vertexBaselineTimes = new double[4]; //4 experiments
+            double[] edgeBaselineTimes = new double[4]; //4 experiments
+
             for (String file : DISTRIBUTED_FILES) {
 
-                BufferedReader distributedReader =
-                        new BufferedReader(new FileReader(file));
+                //have to be reset to 0 for each file
+                int currentVertexIndex = 0;
+                int currentEdgeIndex = 0;
+
+                BufferedReader distributedReader = new BufferedReader(new FileReader(file));
 
                 distributedReader.readLine(); // skip CSV header
 
@@ -78,22 +87,51 @@ public class BenchmarkResultsAnalysis {
                     int processes = Integer.parseInt(values[3]);
                     double distributedTime = Double.parseDouble(values[4]);
 
+                    if (processes == 1) {
+
+                        if (experiment.equals("VERTEX")) {
+                            vertexBaselineTimes[vertexIndex] = distributedTime;
+                            vertexIndex++;
+                        } else if (experiment.equals("EDGE")) {
+                            edgeBaselineTimes[edgeIndex] = distributedTime;
+                            edgeIndex++;
+                        }
+                    }
+
                     if (experiment.equals("VERTEX")) {
-                        System.out.println(
-                                "Vertices: " + vertices +
-                                        " | Processes: " + processes +
-                                        " | Distributed: " + distributedTime + " ms"
+
+                        double speedup = vertexBaselineTimes[currentVertexIndex] / distributedTime;
+                        double efficiency = speedup / processes;
+
+                        System.out.printf(
+                                Locale.US,
+                                "Vertices: %d | Processes: %d | Distributed: %.3f ms | Speedup: %.3fx | Efficiency: %.2f%%%n",
+                                vertices,
+                                processes,
+                                distributedTime,
+                                speedup,
+                                efficiency * 100
                         );
+
+                        currentVertexIndex++;
 
                     } else if (experiment.equals("EDGE")) {
-                        System.out.println(
-                                "Edges: " + edges +
-                                        " | Processes: " + processes +
-                                        " | Distributed: " + distributedTime + " ms"
+
+                        double speedup = edgeBaselineTimes[currentEdgeIndex] / distributedTime;
+                        double efficiency = speedup / processes;
+
+                        System.out.printf(
+                                Locale.US,
+                                "Edges: %d | Processes: %d | Distributed: %.3f ms | Speedup: %.3fx | Efficiency: %.2f%%%n",
+                                edges,
+                                processes,
+                                distributedTime,
+                                speedup,
+                                efficiency * 100 //for %
                         );
+                        currentEdgeIndex++;
                     }
                 }
-
                 distributedReader.close();
             }
 

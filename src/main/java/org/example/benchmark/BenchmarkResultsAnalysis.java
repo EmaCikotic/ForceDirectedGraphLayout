@@ -9,6 +9,13 @@ public class BenchmarkResultsAnalysis {
 
     private static final String SEQUENTIAL_PARALLEL_FILE =  RESULTS_FOLDER + "benchmark_results.csv";
 
+    private static final String[] DISTRIBUTED_FILES = {
+            RESULTS_FOLDER + "distributed_benchmark_1_process.csv",
+            RESULTS_FOLDER + "distributed_benchmark_2_processes.csv",
+            RESULTS_FOLDER + "distributed_benchmark_3_processes.csv",
+            RESULTS_FOLDER + "distributed_benchmark_4_processes.csv"
+    };
+
     public static void main(String[] args) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(SEQUENTIAL_PARALLEL_FILE));
@@ -50,6 +57,45 @@ public class BenchmarkResultsAnalysis {
             }
 
             reader.close();
+
+            System.out.println("\n===== DISTRIBUTED RESULTS =====");
+            System.out.println("                                  ");
+
+            for (String file : DISTRIBUTED_FILES) {
+
+                BufferedReader distributedReader =
+                        new BufferedReader(new FileReader(file));
+
+                distributedReader.readLine(); // skip CSV header
+
+                while ((line = distributedReader.readLine()) != null) {
+
+                    String[] values = line.split(",");
+
+                    String experiment = values[0];
+                    int vertices = Integer.parseInt(values[1]);
+                    int edges = Integer.parseInt(values[2]);
+                    int processes = Integer.parseInt(values[3]);
+                    double distributedTime = Double.parseDouble(values[4]);
+
+                    if (experiment.equals("VERTEX")) {
+                        System.out.println(
+                                "Vertices: " + vertices +
+                                        " | Processes: " + processes +
+                                        " | Distributed: " + distributedTime + " ms"
+                        );
+
+                    } else if (experiment.equals("EDGE")) {
+                        System.out.println(
+                                "Edges: " + edges +
+                                        " | Processes: " + processes +
+                                        " | Distributed: " + distributedTime + " ms"
+                        );
+                    }
+                }
+
+                distributedReader.close();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

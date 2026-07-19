@@ -77,7 +77,10 @@ public class DistributedPerformanceBenchmark {
         try {
 
             if (rank == 0){
-                writer = new PrintWriter("benchmarkingResults/distributed_benchmark_" + processes + "_processes.csv"); //so different number of processes get saved to different files
+
+                String processWord = processes == 1 ? "process" : "processes";
+                writer = new PrintWriter("benchmarkingResults/distributed_benchmark_" + processes + "_" + processWord + ".csv"); //so different number of processes get saved to different files
+
                 writer.println(
                         "experiment," +
                                 "vertices," +

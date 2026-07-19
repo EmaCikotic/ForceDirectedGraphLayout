@@ -2,6 +2,7 @@ package org.example.benchmark;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Locale;
 
 public class BenchmarkResultsAnalysis {
@@ -17,6 +18,7 @@ public class BenchmarkResultsAnalysis {
     };
 
     public static void main(String[] args) {
+
         try {
             BufferedReader reader = new BufferedReader(new FileReader(SEQUENTIAL_PARALLEL_FILE));
 
@@ -57,6 +59,19 @@ public class BenchmarkResultsAnalysis {
             }
 
             reader.close();
+
+            PrintWriter writer = new PrintWriter("benchmarkingResults/distributed_analysis.csv");
+
+            //header
+            writer.println(
+                    "experiment," +
+                            "vertices," +
+                            "edges," +
+                            "processes," +
+                            "distributed_time_ms," +
+                            "speedup," +
+                            "efficiency"
+            );
 
             System.out.println("\n===== DISTRIBUTED RESULTS =====");
             System.out.println("                                  ");
@@ -103,6 +118,20 @@ public class BenchmarkResultsAnalysis {
                         double speedup = vertexBaselineTimes[currentVertexIndex] / distributedTime;
                         double efficiency = speedup / processes;
 
+                        // Save result to the file
+                        writer.printf(
+                                Locale.US,
+                                "%s,%d,%d,%d,%.3f,%.3f,%.3f%n",
+                                experiment,
+                                vertices,
+                                edges,
+                                processes,
+                                distributedTime,
+                                speedup,
+                                efficiency
+                        );
+
+                        //print in the console
                         System.out.printf(
                                 Locale.US,
                                 "Vertices: %d | Processes: %d | Distributed: %.3f ms | Speedup: %.3fx | Efficiency: %.2f%%%n",
@@ -120,6 +149,20 @@ public class BenchmarkResultsAnalysis {
                         double speedup = edgeBaselineTimes[currentEdgeIndex] / distributedTime;
                         double efficiency = speedup / processes;
 
+                        // Save result to the file
+                        writer.printf(
+                                Locale.US,
+                                "%s,%d,%d,%d,%.3f,%.3f,%.3f%n",
+                                experiment,
+                                vertices,
+                                edges,
+                                processes,
+                                distributedTime,
+                                speedup,
+                                efficiency
+                        );
+
+                        //print in the console
                         System.out.printf(
                                 Locale.US,
                                 "Edges: %d | Processes: %d | Distributed: %.3f ms | Speedup: %.3fx | Efficiency: %.2f%%%n",
@@ -133,7 +176,9 @@ public class BenchmarkResultsAnalysis {
                     }
                 }
                 distributedReader.close();
+
             }
+            writer.close();
 
         } catch (IOException e) {
             e.printStackTrace();

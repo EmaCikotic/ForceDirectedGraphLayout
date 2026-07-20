@@ -153,9 +153,28 @@ public class GraphInput {
                 throw new IllegalStateException("Unexpected mode: " + mode);
         }
 
-        //graph for time measurement
+
+
+        // graph for time measurement
         Graph graphTime = Graph.randomGraph(V, E, width, height, seed);
-        FruchtermanReingold layoutTime = new FruchtermanReingold(graphTime, width, height, c);
+        LayoutAlgorithm layoutTime;
+
+        switch (mode) {
+            case SEQUENTIAL:
+                layoutTime = new FruchtermanReingold(
+                        graphTime, width, height, c
+                );
+                break;
+
+            case PARALLEL:
+                layoutTime = new ParallelFruchtermanReingold(
+                        graphTime, width, height, c, false
+                );
+                break;
+
+            default:
+                throw new IllegalStateException("Unexpected mode: " + mode);
+        }
 
 
         //measure time (no gui)

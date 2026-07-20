@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="MPI_benchmark-1-procs" type="Application" factoryName="Application">
+    <envs>
+      <env name="MPJ_HOME" value="$USER_HOME$/Downloads/mpj-v0_44" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="org.example.benchmark.DistributedPerformanceBenchmark" />
+    <module name="gui" />
+    <option name="VM_PARAMETERS" value="-jar $MPJ_HOME$/lib/starter.jar -np 1" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
